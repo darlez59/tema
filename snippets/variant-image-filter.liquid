@@ -1,0 +1,139 @@
+{% comment %}
+  SNIPPET: variant-image-filter.liquid
+  
+  Filtra la galería para mostrar SOLO las imágenes de la variante seleccionada.
+  
+  INSTALACIÓN:
+  1. Admin → Themes → Edit code → Snippets → Add snippet → "variant-image-filter"
+  2. Pegar este contenido y guardar
+  3. En sections/product-template.liquid (o main-product.liquid / product-form.liquid),
+     busca la etiqueta de cierre </form> o el bloque de variantes y agrega justo después:
+     
+       {%- render 'variant-image-filter', product: product -%}
+  
+  REQUISITO: En Shopify Admin → Productos → editar cada variante → asignarle su imagen.
+  Sin esa asignación el script no filtra nada (no hay datos que filtrar).
+
+  COMPATIBILIDAD: Dawn, Debut, Craft, y cualquier tema que use:
+  - <variant-radios> o <variant-selects> para el selector de variantes
+  - data-media-id en los elementos de galería, O
+  - thumbnails con data-thumbnail-id o id tipo "Slider-{id}"
+{% endcomment %}
+
+<script>
+(function() {
+  'use strict';
+
+  // ── 1. Mapa de variante → array de media IDs ─────────────────
+  // Shopify serializa product.media con variant_ids por imagen
+  const productData = {{ product.media | json }};
+  const variantsData = {{ product.variants | json }};
+
+  // Construir mapa { variantId → [mediaId, mediaId, ...] }
+  const variantMediaMap = {};
+
+  // Inicializar con featured_image de cada variante
+  variantsData.forEach(v => {
+    variantMediaMap[v.id] = [];
+    if (v.featured_media) {
+      variantMediaMap[v.id].push(v.featured_media.id);
+    }
+  });
+
+  // Agregar imágenes que tengan variant_ids definidos
+  productData.forEach(media => {
+    if (media.variant_ids && media.variant_ids.length > 0) {
+      media.variant_ids.forEach(vid => {
+        if (!variantMediaMap[vid]) variantMediaMap[vid] = [];
+        if (!variantMediaMap[vid].includes(media.id)) {
+          variantMediaMap[vid].push(media.id);
+        }
+      });
+    }
+  });
+
+  // ── 2. Detectar si alguna variante tiene imágenes propias ─────
+  const hasAnyFilter = Object.values(variantMediaMap).some(ids => ids.length > 0);
+  if (!hasAnyFilter) {
+    console.info('[VariantFilter] Ninguna variante tiene imágenes asignadas — sin filtro activo.');
+    return;
+  }
+
+  // ── 3. Función de filtrado ─────────────────────────────────────
+  function filterGallery(variantId) {
+    const mediaIds = variantMediaMap[variantId] || [];
+
+    // Si la variante no tiene imágenes propias → mostrar todas
+    if (mediaIds.length === 0) {
+      document.querySelectorAll('[data-media-id], [data-thumbnail-id]').forEach(el => {
+        el.style.display = '';
+        el.removeAttribute('aria-hidden');
+      });
+      return;
+    }
+
+    // Selectores comunes de galería en temas populares
+    const mediaEls = document.querySelectorAll([
+      '[data-media-id]',            // Dawn / OS2.0
+      '.product__media-item',       // Dawn
+      '.product-single__photo',     // Debut
+      '.thumbnail-slider__item',    // Craft
+      '[data-thumbnail-id]',        // genérico
+      '.flickity-cell[data-id]',    // Flickity
+    ].join(', '));
+
+    mediaEls.forEach(el => {
+      const id = parseInt(
+           el.dataset.mediaId
+        || el.dataset.thumbnailId
+        || el.dataset.id
+        || 0
+      );
+      const show = mediaIds.includes(id);
+      el.style.display = show ? '' : 'none';
+      el.setAttribute('aria-hidden', show ? 'false' : 'true');
+    });
+
+    // Hacer scroll / activar el primer elemento visible
+    const first = document.querySelector(
+      `[data-media-id="${mediaIds[0]}"], [data-thumbnail-id="${mediaIds[0]}"]`
+    );
+    if (first) {
+      first.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      first.click(); // activa el slide en temas con carrusel JS
+    }
+  }
+
+  // ── 4. Escuchar cambio de variante ────────────────────────────
+  // Método 1: evento nativo de Shopify OS2.0
+  document.addEventListener('variant:change', e => {
+    const variant = e.detail?.variant;
+    if (variant) filterGallery(variant.id);
+  });
+
+  // Método 2: MutationObserver en input[name="id"] (temas legacy)
+  const variantInput = document.querySelector(
+    'input[name="id"][form], form[action="/cart/add"] input[name="id"]'
+  );
+  if (variantInput) {
+    new MutationObserver(() => {
+      const vid = parseInt(variantInput.value);
+      if (vid) filterGallery(vid);
+    }).observe(variantInput, { attributes: true, attributeFilter: ['value'] });
+  }
+
+  // Método 3: change en select de variante (temas con <select>)
+  document.addEventListener('change', e => {
+    if (e.target.matches('select[name="id"], .product-form__input select')) {
+      const vid = parseInt(e.target.value);
+      if (vid) filterGallery(vid);
+    }
+  });
+
+  // ── 5. Aplicar filtro a la variante inicial ───────────────────
+  const initialVariantId = {{ product.selected_or_first_available_variant.id | json }};
+  if (initialVariantId) filterGallery(initialVariantId);
+
+  console.info('[VariantFilter] Activo —', Object.keys(variantMediaMap).length, 'variantes mapeadas.');
+})();
+</script>

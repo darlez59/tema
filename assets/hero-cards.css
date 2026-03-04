@@ -1,0 +1,313 @@
+/* Hero cards: carrusel de tarjetas (varios en web, 1 en mobile) */
+.sec__hero-cards {
+  overflow: hidden;
+}
+
+.hero-cards-swiper {
+  position: relative;
+}
+
+/* Flechas siempre visibles (desktop y mobile) */
+.hero-cards-swiper .swiper-actions {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Cards mismo tamaño: altura uniforme por slide */
+.hero-cards-swiper .swiper-wrapper {
+  align-items: stretch;
+}
+
+.hero-cards__slide {
+  height: 100%;
+}
+
+.hero-card {
+  background: var(--color-background, #fff);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.hero-card__media {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.hero-card__media picture,
+.hero-card__media .image-picture,
+.hero-card__media img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-card__media .image-picture {
+  display: block;
+}
+
+/* Franja de texto: altura fija para que todas las cards midan igual */
+.hero-card__strip {
+  flex: 0 0 auto;
+  height: var(--hero-strip-height, 200px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: var(--hero-card-heading-color, #ffffff);
+  overflow: hidden;
+}
+
+.hero-card__strip-text {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.hero-card__heading {
+  font-size: var(--hero-heading-size-desk, 1.25rem);
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  color: var(--hero-card-heading-color, #ffffff);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hero-card__subtitle {
+  font-size: var(--hero-subtitle-size-desk, 1rem);
+  line-height: 1.4;
+  color: var(--hero-card-subtitle-color, rgba(255, 255, 255, 0.9));
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media screen and (max-width: 767.98px) {
+  .hero-card__heading {
+    font-size: var(--hero-heading-size-mob, 1.125rem);
+  }
+  .hero-card__subtitle {
+    font-size: var(--hero-subtitle-size-mob, 0.875rem);
+  }
+}
+
+/* Botón base: fondo, color, tamaño desktop/mobile */
+.hero-card__cta {
+  align-self: flex-start;
+  margin-top: auto;
+  text-decoration: none;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  font-weight: 500;
+  padding: 15px 30px;
+  border-radius: 15px;
+  border: none;
+  background-color: var(--hero-cta-bg, #000);
+  color: var(--hero-cta-color, #fff);
+  font-size: var(--hero-cta-font-size-desk, 16px);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+@media screen and (max-width: 767.98px) {
+  .hero-card__cta {
+    font-size: var(--hero-cta-font-size-mob, 14px);
+  }
+}
+
+.hero-card__cta:hover {
+  color: var(--hero-cta-hover-color, var(--hero-cta-color, #fff));
+}
+
+.hero-card__arrow {
+  font-size: 0.65em;
+}
+
+/* 1. Diagonal Shine */
+.hero-card__cta--diagonal-shine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: skewX(-45deg);
+  transition: left 1s ease;
+  pointer-events: none;
+}
+
+.hero-card__cta--diagonal-shine:hover::after {
+  left: 100%;
+}
+
+/* 2. Text Slide Up */
+.hero-card__cta--text-slide-up .hero-card__cta-text {
+  display: inline-block;
+  transform: translateY(50%);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.hero-card__cta--text-slide-up:hover .hero-card__cta-text {
+  opacity: 1;
+  transform: translateY(0%);
+}
+
+/* 3. Ripple Burst */
+.hero-card__cta--ripple-burst::after {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.25) 10%,
+    transparent 10%
+  );
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.5s ease-out;
+  pointer-events: none;
+}
+
+.hero-card__cta--ripple-burst:hover::after {
+  transform: translate(-50%, -50%) scale(5);
+}
+
+/* 4. Soft Ripple */
+.hero-card__cta--soft-ripple::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  border-radius: 50%;
+  transition: transform 0.5s ease-out;
+  pointer-events: none;
+}
+
+.hero-card__cta--soft-ripple:hover::before {
+  transform: translate(-50%, -50%) scale(2);
+}
+
+/* 5. Shine Swipe */
+.hero-card__cta--shine-swipe::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -95%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: skewX(30deg);
+  transition: left 0.5s ease-in-out;
+  pointer-events: none;
+}
+
+.hero-card__cta--shine-swipe:hover::before {
+  left: 95%;
+}
+
+/* 6. Glitch Shake */
+.hero-card__cta--glitch-shake:hover {
+  animation: hero-cta-glitch 0.2s linear 2;
+}
+
+@keyframes hero-cta-glitch {
+  0% { transform: skewX(0deg); }
+  25% { transform: skewX(15deg); }
+  50% { transform: skewX(-15deg); }
+  75% { transform: skewX(10deg); }
+  100% { transform: skewX(0deg); }
+}
+
+/* 7. Animated Border */
+.hero-card__cta--animated-border {
+  background-color: transparent !important;
+  color: var(--hero-cta-color, #000) !important;
+}
+
+.hero-card__cta--animated-border .hero-card__cta-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.hero-card__cta--animated-border::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 5px;
+  background-color: var(--hero-cta-bg, #000);
+  transition: all 1s ease;
+}
+
+.hero-card__cta--animated-border::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: -100%;
+  width: 100%;
+  height: 5px;
+  background-color: var(--hero-cta-bg, #000);
+  transition: all 1s ease;
+}
+
+.hero-card__cta--animated-border:hover::before {
+  left: 0;
+}
+
+.hero-card__cta--animated-border:hover::after {
+  right: 0;
+}
+
+.hero-card__cta--animated-border .hero-card__cta-frame::before {
+  content: "";
+  position: absolute;
+  top: -100%;
+  right: 0;
+  width: 5px;
+  height: 100%;
+  background-color: var(--hero-cta-bg, #000);
+  transition: all 1s ease;
+}
+
+.hero-card__cta--animated-border .hero-card__cta-frame::after {
+  content: "";
+  position: absolute;
+  bottom: -100%;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background-color: var(--hero-cta-bg, #000);
+  transition: all 1s ease;
+}
+
+.hero-card__cta--animated-border:hover .hero-card__cta-frame::before {
+  top: 0;
+}
+
+.hero-card__cta--animated-border:hover .hero-card__cta-frame::after {
+  bottom: 0;
+}

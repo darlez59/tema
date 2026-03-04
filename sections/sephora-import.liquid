@@ -1,0 +1,1650 @@
+{% comment %}
+  SECCIÓN: Importador de productos Sephora — Mak Beauty v2
+  
+  INSTALACIÓN EN SHOPIFY (OS 2.0):
+  1. Admin → Online Store → Themes → Edit code
+  2. En "Sections" → sephora-import.liquid → pegar TODO esto
+  3. Guardar
+{% endcomment %}
+
+<style>
+  .mk-importer {
+    --mk-pink: #E48DA5;
+    --mk-pink-dark: #D4729A;
+    --mk-pink-light: #FDF2F5;
+    --mk-pink-soft: #F8D7E0;
+    --mk-accent: #C96B8B;
+    --mk-text: #2D2D2D;
+    --mk-text-muted: #7A7A7A;
+    --mk-bg: #FAFAFA;
+    --mk-white: #FFFFFF;
+    --mk-border: #F0E0E5;
+    --mk-success: #7CB69D;
+    --mk-radius: 16px;
+    --mk-shadow: 0 4px 20px rgba(228, 141, 165, 0.12);
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+    color: var(--mk-text);
+  }
+
+  /* — Banner superior — */
+  .mk-banner {
+    width: 100%; border-radius: var(--mk-radius); overflow: hidden;
+    margin-bottom: 28px; background: var(--mk-pink-light);
+    aspect-ratio: 1100 / 320;
+    max-height: 320px;
+  }
+  .mk-banner img {
+    width: 100%; height: 100%; object-fit: cover; object-position: center;
+    display: block;
+  }
+  @media (max-width: 768px) {
+    .mk-banner { aspect-ratio: 768 / 220; max-height: 220px; }
+  }
+  @media (max-width: 480px) {
+    .mk-banner { aspect-ratio: 480 / 180; max-height: 180px; border-radius: 12px; }
+  }
+
+  /* — Header — */
+  .mk-header { text-align: center; margin-bottom: 32px; }
+  .mk-header h2 { font-size: 28px; font-weight: 700; margin: 0 0 6px; }
+  .mk-header p { font-size: 14px; color: var(--mk-text-muted); margin: 0; }
+
+  /* — Búsqueda — */
+  .mk-search {
+    background: var(--mk-white); border-radius: var(--mk-radius);
+    padding: 24px; box-shadow: var(--mk-shadow); margin-bottom: 28px;
+    border: 1px solid var(--mk-border);
+  }
+  .mk-search-label {
+    font-size: 13px; font-weight: 600; color: var(--mk-pink-dark);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+    text-transform: uppercase; letter-spacing: 0.8px;
+  }
+  .mk-search-row { display: flex; gap: 12px; }
+  .mk-search-input {
+    flex: 1; padding: 14px 20px; border: 2px solid var(--mk-border);
+    border-radius: 12px; font-size: 14px; font-family: inherit;
+    transition: border-color 0.2s; background: var(--mk-bg);
+  }
+  .mk-search-input:focus { border-color: var(--mk-pink); outline: none; background: var(--mk-white); }
+  .mk-search-input::placeholder { color: #C0A8B0; }
+  .mk-btn-buscar {
+    padding: 14px 32px;
+    background: linear-gradient(135deg, var(--mk-pink), var(--mk-pink-dark));
+    color: var(--mk-white); border: none; border-radius: 12px;
+    font-size: 14px; font-weight: 600; font-family: inherit;
+    cursor: pointer; transition: transform 0.15s, box-shadow 0.2s; white-space: nowrap;
+  }
+  .mk-btn-buscar:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(212,114,154,0.4); }
+  .mk-btn-buscar:disabled { background: #D4C5CA; cursor: not-allowed; transform: none; }
+  .mk-alert {
+    display: none; background: #FFF8E1; border: 1px solid #FFD54F;
+    border-radius: 10px; padding: 10px 16px; margin-top: 12px; font-size: 13px; color: #8D6E00;
+  }
+
+  /* — Loading / Welcome — */
+  .mk-loading { display: none; text-align: center; padding: 70px 20px; }
+  .mk-loading.visible { display: block; }
+  .mk-loader {
+    width: 44px; height: 44px; border: 4px solid var(--mk-pink-soft);
+    border-top-color: var(--mk-pink-dark); border-radius: 50%;
+    animation: mk-spin 0.7s linear infinite; margin: 0 auto 18px;
+  }
+  @keyframes mk-spin { to { transform: rotate(360deg); } }
+  .mk-loading p { font-size: 14px; color: var(--mk-text-muted); }
+
+  .mk-welcome {
+    text-align: center; padding: 60px 20px; background: var(--mk-white);
+    border-radius: var(--mk-radius); border: 2px dashed var(--mk-border);
+  }
+  .mk-welcome-icon {
+    width: 64px; height: 64px; background: var(--mk-pink-light);
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; margin: 0 auto 16px; font-size: 28px;
+  }
+  .mk-welcome h3 { font-size: 20px; font-weight: 600; margin: 0 0 8px; }
+  .mk-welcome p { font-size: 14px; color: var(--mk-text-muted); max-width: 380px; margin: 0 auto; line-height: 1.5; }
+
+  /* ═══════ PRODUCTO LAYOUT ═══════ */
+  .mk-product { display: none; }
+  .mk-product.visible {
+    display: grid; grid-template-columns: 1fr 400px; gap: 28px; align-items: start;
+  }
+  .mk-panel {
+    background: var(--mk-white); border-radius: var(--mk-radius);
+    box-shadow: var(--mk-shadow); padding: 28px; border: 1px solid var(--mk-border);
+  }
+
+  /* — Galería estilo Sephora — */
+  .mk-gallery { display: grid; grid-template-columns: 72px 1fr; gap: 12px; margin-bottom: 20px; }
+  .mk-gallery-thumbs {
+    display: flex; flex-direction: column; gap: 8px;
+    max-height: 500px; overflow-y: auto; scrollbar-width: thin;
+    scrollbar-color: var(--mk-pink-soft) transparent;
+  }
+  .mk-gallery-thumbs::-webkit-scrollbar { width: 4px; }
+  .mk-gallery-thumbs::-webkit-scrollbar-thumb { background: var(--mk-pink-soft); border-radius: 4px; }
+  .mk-gallery-thumb {
+    width: 64px; height: 64px; border-radius: 8px; object-fit: cover;
+    border: 2px solid var(--mk-border); cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s; flex-shrink: 0;
+  }
+  .mk-gallery-thumb:hover { border-color: var(--mk-pink); transform: scale(1.05); }
+  .mk-gallery-thumb.active { border-color: var(--mk-pink-dark); box-shadow: 0 0 0 2px var(--mk-pink-soft); }
+  .mk-gallery-main {
+    width: 100%; aspect-ratio: 1; border-radius: 14px; overflow: hidden;
+    background: var(--mk-bg); display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .mk-gallery-main img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.3s; }
+  .mk-gallery-main img:hover { transform: scale(1.05); }
+  .mk-img-count {
+    position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.6);
+    color: #fff; font-size: 11px; padding: 4px 10px; border-radius: 20px;
+  }
+
+  /* — Gallery loading overlay — */
+  .mk-gallery-main { position: relative; }
+  .mk-gallery-overlay {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255,255,255,0.88); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+    flex-direction: column; gap: 10px; border-radius: 14px; z-index: 5;
+  }
+  .mk-gallery-overlay.visible { display: flex; }
+  .mk-gallery-overlay .mk-go-spinner {
+    width: 36px; height: 36px; border: 3px solid var(--mk-pink-soft);
+    border-top-color: var(--mk-pink-dark); border-radius: 50%;
+    animation: mk-spin 0.6s linear infinite;
+  }
+  .mk-gallery-overlay .mk-go-text {
+    font-size: 12px; color: var(--mk-text-muted); font-weight: 500;
+  }
+
+  /* — Unified variant grid (swatches + chips combined) — */
+  .mk-variants-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-bottom: 18px; max-height: 340px; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: var(--mk-pink-soft) transparent;
+  }
+  .mk-variants-grid::-webkit-scrollbar { width: 4px; }
+  .mk-variants-grid::-webkit-scrollbar-thumb { background: var(--mk-pink-soft); border-radius: 4px; }
+  .mk-variant-card {
+    border: 2px solid var(--mk-border); border-radius: 12px;
+    padding: 10px 6px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--mk-white);
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    min-height: 60px; justify-content: center;
+  }
+  .mk-variant-card:hover { border-color: var(--mk-pink); background: var(--mk-pink-light); }
+  .mk-variant-card.picked { border-color: var(--mk-pink-dark); background: var(--mk-pink-light); box-shadow: 0 0 0 1px var(--mk-pink-dark); }
+  .mk-variant-card.oos { opacity: 0.4; text-decoration: line-through; cursor: not-allowed; }
+  .mk-variant-card.loading { pointer-events: none; opacity: 0.6; }
+  .mk-vc-img {
+    width: 38px; height: 38px; border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--mk-border); flex-shrink: 0;
+  }
+  .mk-variant-card.picked .mk-vc-img { border-color: var(--mk-pink-dark); }
+  .mk-vc-label { font-size: 12px; font-weight: 600; line-height: 1.25; color: var(--mk-text); }
+  .mk-vc-desc { font-size: 10px; color: var(--mk-text-muted); line-height: 1.2; }
+  .mk-vc-price { font-size: 11px; color: var(--mk-pink-dark); font-weight: 700; }
+
+  /* — Info — */
+  .mk-brand {
+    font-size: 13px; font-weight: 700; color: var(--mk-pink-dark);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;
+  }
+  .mk-title { font-size: 20px; font-weight: 700; margin: 0 0 6px; line-height: 1.3; }
+  .mk-rating { font-size: 13px; color: var(--mk-text-muted); margin-bottom: 10px; }
+  .mk-rating .stars { color: #FFB800; letter-spacing: 1px; }
+  .mk-price-inline {
+    font-size: 22px; font-weight: 800; color: var(--mk-text); margin-bottom: 6px;
+  }
+  .mk-color-label { font-size: 13px; color: var(--mk-text-muted); margin-bottom: 16px; }
+  .mk-color-label strong { color: var(--mk-text); }
+  .mk-variant-price { font-size: 12px; color: var(--mk-pink-dark); font-weight: 600; margin-left: 6px; }
+
+  .mk-field-label {
+    display: block; font-size: 12px; font-weight: 600; color: var(--mk-text-muted);
+    margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .mk-field {
+    width: 100%; padding: 10px 14px; border: 1.5px solid var(--mk-border);
+    border-radius: 10px; font-size: 14px; font-family: inherit;
+    background: var(--mk-bg); margin-bottom: 14px; box-sizing: border-box;
+  }
+  .mk-field:focus { border-color: var(--mk-pink); outline: none; }
+
+  /* (variant chips merged into mk-variants-grid above) */
+
+  /* ═══════ PANEL DERECHO ═══════ */
+  .mk-summary { position: sticky; top: 20px; }
+  .mk-summary-title {
+    font-size: 16px; font-weight: 700; margin-bottom: 16px;
+    padding-bottom: 12px; border-bottom: 2px solid var(--mk-pink-soft);
+  }
+
+  /* — Desglose — */
+  .mk-bd { margin-bottom: 16px; }
+  .mk-bd-section { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--mk-border); }
+  .mk-bd-section:last-child { border-bottom: none; margin-bottom: 0; }
+  .mk-bd-header {
+    font-size: 11px; font-weight: 700; color: var(--mk-pink-dark);
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;
+  }
+  .mk-bd-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; font-size: 13px; }
+  .mk-bd-row .lbl { color: var(--mk-text-muted); }
+  .mk-bd-row .val { font-weight: 600; color: var(--mk-text); }
+  .mk-bd-row .val.free { color: var(--mk-success); }
+  .mk-bd-row .val.hl { color: var(--mk-pink-dark); font-weight: 700; }
+  .mk-bd-sub {
+    display: flex; justify-content: space-between; padding: 6px 0 0;
+    margin-top: 4px; border-top: 1px dashed var(--mk-border);
+  }
+  .mk-bd-sub .lbl { font-weight: 600; font-size: 13px; }
+  .mk-bd-sub .val { font-weight: 700; color: var(--mk-pink-dark); font-size: 13px; }
+  .mk-bd-total {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 0 0; margin-top: 4px; border-top: 2px solid var(--mk-pink-dark);
+  }
+  .mk-bd-total .lbl { font-size: 15px; font-weight: 700; }
+  .mk-bd-total .val { font-size: 26px; font-weight: 800; color: var(--mk-pink-dark); }
+
+  /* — Delivery — */
+  .mk-delivery-box {
+    background: linear-gradient(135deg, #F0FAF4, #E8F5EE);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; border: 1px solid #C8E6D0;
+  }
+  .mk-delivery-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .mk-delivery-date { font-weight: 700; color: #3D8B5E; font-size: 14px; }
+
+  /* — Qty — */
+  .mk-qty-section {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; padding: 12px 16px; background: var(--mk-pink-light); border-radius: 12px;
+  }
+  .mk-qty-label { font-size: 14px; font-weight: 600; }
+  .mk-qty-controls { display: flex; align-items: center; gap: 14px; }
+  .mk-qty-btn {
+    width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--mk-border);
+    background: var(--mk-white); font-size: 18px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    color: var(--mk-text); font-family: inherit;
+  }
+  .mk-qty-btn:hover { border-color: var(--mk-pink); background: var(--mk-pink-light); }
+  .mk-qty-num { font-size: 20px; font-weight: 700; min-width: 30px; text-align: center; }
+
+  /* — Buttons — */
+  .mk-btn-comprar {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, var(--mk-pink), var(--mk-pink-dark));
+    color: var(--mk-white); border: none; border-radius: 14px;
+    font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer;
+    margin-bottom: 10px; transition: transform 0.15s, box-shadow 0.2s;
+  }
+  .mk-btn-comprar:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,114,154,0.35); }
+  .mk-btn-carrito {
+    width: 100%; padding: 14px; background: var(--mk-white);
+    color: var(--mk-pink-dark); border: 2px solid var(--mk-pink);
+    border-radius: 14px; font-size: 15px; font-weight: 600; font-family: inherit;
+    cursor: pointer; transition: all 0.2s; margin-bottom: 14px;
+  }
+  .mk-btn-carrito:hover { background: var(--mk-pink-light); }
+  .mk-secure {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; font-size: 12px; color: var(--mk-text-muted);
+  }
+
+  .mk-notes-section { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--mk-border); }
+
+  /* — Toast de confirmación — */
+  .mk-cart-toast {
+    position: fixed; top: 24px; right: 24px; z-index: 99999;
+    background: var(--mk-white, #fff); border-radius: 16px; padding: 18px 48px 18px 18px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18); border: 2px solid var(--mk-success, #7CB69D);
+    max-width: 380px; font-family: 'Poppins', -apple-system, sans-serif;
+    animation: mk-toast-in 0.35s ease; line-height: 1.4;
+  }
+  @keyframes mk-toast-in {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .mk-toast-close {
+    position: absolute; top: 8px; right: 10px; background: none; border: none;
+    font-size: 18px; cursor: pointer; color: #999; padding: 2px 6px; line-height: 1;
+  }
+  .mk-toast-close:hover { color: #333; }
+  .mk-toast-body { display: flex; align-items: flex-start; gap: 12px; }
+  .mk-toast-icon {
+    width: 40px; height: 40px; border-radius: 50%; background: #E8F5EE;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    font-size: 20px; color: #3D8B5E;
+  }
+  .mk-toast-info { flex: 1; }
+  .mk-toast-info strong { display: block; font-size: 15px; color: #2D2D2D; margin-bottom: 2px; }
+  .mk-toast-info .mk-toast-product { font-size: 12px; color: #7A7A7A; margin-bottom: 2px; }
+  .mk-toast-info .mk-toast-price { font-size: 13px; color: var(--mk-pink-dark, #D4729A); font-weight: 700; }
+  .mk-toast-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .mk-toast-btn {
+    padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    font-family: inherit; cursor: pointer; text-decoration: none; border: none;
+    transition: all 0.2s; display: inline-block; text-align: center;
+  }
+  .mk-toast-btn.primary {
+    background: linear-gradient(135deg, var(--mk-pink, #E48DA5), var(--mk-pink-dark, #D4729A));
+    color: #fff;
+  }
+  .mk-toast-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(212,114,154,0.3); }
+  .mk-toast-btn.secondary { background: #F5F5F5; color: #666; }
+  .mk-toast-btn.secondary:hover { background: #EEE; }
+
+  /* — Badge de fuente (Sephora / Amazon) — */
+  .mk-source-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700; padding: 3px 10px;
+    border-radius: 20px; margin-bottom: 10px; text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .mk-source-badge.sephora { background: #FDF2F5; color: #C96B8B; border: 1px solid #F8D7E0; }
+  .mk-source-badge.amazon  { background: #FFF8EE; color: #B45309; border: 1px solid #FDDFA0; }
+
+  /* — Responsive — */
+  @media (max-width: 820px) {
+    .mk-product.visible { grid-template-columns: 1fr; }
+    .mk-search-row { flex-direction: column; }
+    .mk-summary { position: static; }
+    .mk-gallery { grid-template-columns: 56px 1fr; gap: 8px; }
+    .mk-gallery-thumb { width: 48px; height: 48px; }
+    .mk-gallery-thumbs { max-height: 350px; }
+  }
+</style>
+
+<div class="mk-importer">
+
+  {%- if section.settings.banner_image -%}
+  <div class="mk-banner">
+    <img src="{{ section.settings.banner_image | image_url: width: 1400 }}"
+         srcset="{{ section.settings.banner_image | image_url: width: 480 }} 480w,
+                 {{ section.settings.banner_image | image_url: width: 768 }} 768w,
+                 {{ section.settings.banner_image | image_url: width: 1100 }} 1100w,
+                 {{ section.settings.banner_image | image_url: width: 1400 }} 1400w"
+         sizes="(max-width: 480px) 480px, (max-width: 768px) 768px, 1100px"
+         alt="{{ section.settings.banner_alt | default: 'Mak Beauty Banner' }}"
+         loading="eager">
+  </div>
+  {%- endif -%}
+
+  <div class="mk-header">
+    <h2>Importar desde Sephora &amp; Amazon USA</h2>
+    <p>Pega el enlace de Sephora o Amazon (o un ASIN) y te lo traemos hasta tu puerta</p>
+  </div>
+
+  <div class="mk-search">
+    <div class="mk-search-label">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      Link de Sephora, Amazon o ASIN (ej: B08BHXG144)
+    </div>
+    <div class="mk-search-row">
+      <input type="text" class="mk-search-input" id="mk-url" placeholder="https://sephora.com/product/... · https://amazon.com/dp/... · B08BHXG144">
+      <button class="mk-btn-buscar" id="mk-btn" onclick="mkBuscar()">Buscar Producto</button>
+    </div>
+    <div class="mk-alert" id="mk-alert"></div>
+  </div>
+
+  <div class="mk-loading" id="mk-loading">
+    <div class="mk-loader"></div>
+    <p id="mk-loading-msg">Conectando...</p>
+  </div>
+
+  <div class="mk-welcome" id="mk-welcome">
+    <div class="mk-welcome-icon">✨</div>
+    <h3>Tu próximo favorito te espera</h3>
+    <p>Copia el link de <strong>sephora.com</strong> o <strong>amazon.com</strong> (o pega directamente el ASIN). Nosotros hacemos el resto.</p>
+  </div>
+
+  <!-- ═══════ PRODUCTO ═══════ -->
+  <div class="mk-product" id="mk-product">
+    <!-- PANEL IZQUIERDO -->
+    <div class="mk-panel">
+      <div class="mk-gallery">
+        <div class="mk-gallery-thumbs" id="mk-gallery-thumbs"></div>
+        <div class="mk-gallery-main">
+          <img id="mk-main-img" src="" alt="Producto">
+          <span class="mk-img-count" id="mk-img-count"></span>
+          <div class="mk-gallery-overlay" id="mk-gallery-overlay">
+            <div class="mk-go-spinner"></div>
+            <span class="mk-go-text">Cargando imágenes...</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="mk-source-badge"></div>
+      <div class="mk-brand" id="mk-brand"></div>
+      <h3 class="mk-title" id="mk-title"></h3>
+      <div class="mk-rating" id="mk-rating" style="display:none;"></div>
+      <div class="mk-price-inline" id="mk-price-inline"></div>
+      <div class="mk-color-label" id="mk-color-label" style="display:none;"></div>
+
+      <div id="mk-variants-wrap" style="display:none;">
+        <label class="mk-field-label" id="mk-variants-label">Tono / Variante</label>
+        <div class="mk-variants-grid" id="mk-variants-grid"></div>
+      </div>
+
+      <label class="mk-field-label">Categoría</label>
+      <div class="mk-field" id="mk-category" style="white-space:pre-line;min-height:38px;line-height:1.5;padding:8px 12px;font-size:13px;color:#555;">Maquillaje</div>
+
+      <div class="mk-notes-section">
+        <label class="mk-field-label">Indicaciones especiales</label>
+        <textarea class="mk-field" id="mk-notes" rows="2" placeholder="Color exacto, talla, presentación..."></textarea>
+      </div>
+    </div>
+
+    <!-- PANEL DERECHO -->
+    <div class="mk-panel mk-summary">
+      <div class="mk-summary-title">Resumen de tu pedido</div>
+
+      <div class="mk-bd">
+        <div class="mk-bd-section">
+          <div class="mk-bd-header">🇺🇸 Compra en USA</div>
+          <div class="mk-bd-row"><span class="lbl">Producto(s)</span><span class="val" id="bd-prod">$ 0.00</span></div>
+          <div class="mk-bd-row"><span class="lbl">Taxes (7%)</span><span class="val" id="bd-tax">$ 0.00</span></div>
+          <div class="mk-bd-row"><span class="lbl">Envío en tienda</span><span class="val free" id="bd-store-ship">Gratis</span></div>
+          <div class="mk-bd-sub"><span class="lbl">Total en USA</span><span class="val" id="bd-usa">$ 0.00</span></div>
+        </div>
+
+        <div class="mk-bd-section">
+          <div class="mk-bd-header">🇵🇪 Envío a Perú</div>
+          <div class="mk-bd-row"><span class="lbl">Envío internacional <small id="bd-weight">(~0.5 Kg)</small></span><span class="val" id="bd-ship">$ 19.00</span></div>
+          <div class="mk-bd-row"><span class="lbl">Impuestos importación</span><span class="val free" id="bd-imp">Gratis</span></div>
+          <div class="mk-bd-sub"><span class="lbl">Total traída</span><span class="val" id="bd-traida">$ 19.00</span></div>
+        </div>
+
+        <div class="mk-bd-section">
+          <div class="mk-bd-header">🛡️ Servicio Mak Beauty</div>
+          <div class="mk-bd-row"><span class="lbl">Procesamiento</span><span class="val" id="bd-proc">$ 0.00</span></div>
+          <div class="mk-bd-row"><span class="lbl">30 días de garantía</span><span class="val free">Gratis</span></div>
+        </div>
+
+        <div class="mk-bd-section" style="border-bottom:none;">
+          <div class="mk-bd-row"><span class="lbl" style="font-weight:600">Total (USD)</span><span class="val hl" id="bd-usd">$ 0.00</span></div>
+          <div class="mk-bd-row" style="font-size:0.78rem;opacity:0.65"><span class="lbl">Tipo de cambio</span><span class="val" id="bd-rate">$1 = S/ 3.75</span></div>
+          <div class="mk-bd-total"><span class="lbl">Total a pagar</span><span class="val" id="bd-pen">S/ 0.00</span></div>
+        </div>
+      </div>
+
+      <div class="mk-delivery-box">
+        <div class="mk-delivery-row">
+          <span>Llega antes del</span>
+          <span class="mk-delivery-date" id="mk-arrival">--</span>
+        </div>
+      </div>
+
+      <div class="mk-qty-section">
+        <span class="mk-qty-label">Cantidad:</span>
+        <div class="mk-qty-controls">
+          <button class="mk-qty-btn" onclick="mkQty(-1)">−</button>
+          <span class="mk-qty-num" id="mk-qty">1</span>
+          <button class="mk-qty-btn" onclick="mkQty(1)">+</button>
+        </div>
+      </div>
+
+      <button class="mk-btn-comprar" onclick="mkComprar()">Comprar ahora</button>
+      <button class="mk-btn-carrito" onclick="mkAgregar()">Agregar al carrito</button>
+
+      <div class="mk-secure">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Pago 100% seguro · Garantía de autenticidad
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+
+
+<script>
+  // ═══════════════════════════════════════════════════════════════
+  //  MK BEAUTY — CONFIGURACIÓN + CART LOGIC v4
+  //  Fixes:
+  //  • reused=false siempre  → mkStableId() hash determinístico
+  //  • Race condition Avada  → mkPollCartCount() confirma el item
+  //  • Variant no propagado  → mkPollVariant() antes del add
+  // ═══════════════════════════════════════════════════════════════
+  const MK_API        = 'https://web-production-56b31.up.railway.app';
+  let   MK_RATE       = 3.75;   // fallback — se reemplaza con yfinance via /api/config
+  const MK_TAX_RATE   = 0.07;
+  const MK_INTL_SHIP    = 20.00;   // envío fijo Sephora (USD)
+  const MK_SHIP_RATE_LB = 12.00;   // $ por lb — envío aéreo Amazon
+  const MK_SHIP_MIN     = 12.00;   // mínimo de envío Amazon (USD)
+  const MK_COMMISSION = 0.15;
+  const MK_SYMBOL     = 'S/';
+
+  // ── RapidAPI — Amazon Real-Time Data ──
+  const MK_AMZN_HOST = 'real-time-amazon-data.p.rapidapi.com';
+  const MK_AMZN_KEY  = 'cda0d06925msh01a0e1d8675d51dp1ceef6jsn6b73c86035d9';
+
+  let mkData         = null;
+  let mkQtyVal       = 1;
+  let mkAddingToCart = false;
+  let mkVariantImagesCache = {};
+  let mkActiveRequest      = null;
+
+  /* ── Cargar tipo de cambio desde backend (yfinance + 0.10) ── */
+  async function mkLoadConfig() {
+    try {
+      const r = await fetch(MK_API + '/api/config');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const cfg = await r.json();
+      if (cfg.exchange_rate && cfg.exchange_rate > 0) {
+        MK_RATE = cfg.exchange_rate;
+        MK.log(`Tipo de cambio: 1 USD = S/ ${MK_RATE.toFixed(4)} (yfinance)`);
+        // Si ya hay un producto cargado, refrescar el desglose
+        if (mkData) mkRecalc();
+        else {
+          const rateEl = document.getElementById('bd-rate');
+          if (rateEl) rateEl.textContent = `$1 = ${MK_SYMBOL} ${MK_RATE.toFixed(4)}`;
+        }
+      }
+    } catch(e) {
+      MK.warn('mkLoadConfig: usando fallback', MK_RATE, e.message);
+    }
+  }
+  mkLoadConfig(); // llamar inmediatamente al cargar la página
+
+  // ─── Logger con colores ───────────────────────────────────────
+  const MK = {
+    log : (...a) => console.log('%c[MK]',  'background:#E48DA5;color:#fff;padding:2px 6px;border-radius:4px;font-weight:bold', ...a),
+    warn: (...a) => console.warn('%c[MK⚠]','background:#FFB800;color:#000;padding:2px 6px;border-radius:4px', ...a),
+    err : (...a) => console.error('%c[MK✗]','background:#E53935;color:#fff;padding:2px 6px;border-radius:4px', ...a),
+  };
+
+  // ─── Hash estable (NO usa Date.now) ──────────────────────────
+  // Mismo producto+variante → mismo ID → backend responde reused=true
+  function mkStableId(url, skuId) {
+    const raw = (url || '') + '|' + (skuId || 'default');
+    let h = 0;
+    for (let i = 0; i < raw.length; i++) {
+      h = (Math.imul(31, h) + raw.charCodeAt(i)) | 0;
+    }
+    return 'mk_' + Math.abs(h).toString(36);
+  }
+
+  // ─── Persistencia de variant_id (localStorage) ───────────────
+  const MK_MAP = 'mk_vid_map_v4';
+  function mkGetMap()         { try { return JSON.parse(localStorage.getItem(MK_MAP) || '{}'); } catch { return {}; } }
+  function mkGetVid(key)      { return mkGetMap()[key] || null; }
+  function mkSetVid(key, vid) { const m = mkGetMap(); m[key] = String(vid); localStorage.setItem(MK_MAP, JSON.stringify(m)); }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  DETECCION DE FUENTE
+  // ═══════════════════════════════════════════════════════════════
+  // Retorna 'sephora' | 'amazon' | null
+  function mkDetectSource(input) {
+    if (!input) return null;
+    if (input.includes('sephora.com')) return 'sephora';
+    if (input.includes('amazon.com') || input.includes('amzn.to') || input.includes('amzn.com')) return 'amazon';
+    // ASIN directo: B seguido de 9 carácteres alfanuméricos
+    if (/^B[A-Z0-9]{9}$/i.test(input.trim())) return 'amazon';
+    return null;
+  }
+
+  // Extrae el ASIN de una URL de Amazon o lo retorna si es ASIN directo
+  function mkExtractAsin(input) {
+    input = input.trim();
+    // ASIN directo
+    if (/^B[A-Z0-9]{9}$/i.test(input)) return input.toUpperCase();
+    // /dp/ASIN o /gp/product/ASIN
+    const m = input.match(/\/(?:dp|gp\/product)\/([A-Z0-9]{10})/i);
+    if (m) return m[1].toUpperCase();
+    // /product/ASIN al final
+    const m2 = input.match(/[?&]asin=([A-Z0-9]{10})/i);
+    if (m2) return m2[1].toUpperCase();
+    return null;
+  }
+
+  /* ═══════ BUSCAR: ROUTER (Sephora / Amazon) ═══════ */
+  async function mkBuscar() {
+    const url = document.getElementById('mk-url').value.trim();
+    const al  = document.getElementById('mk-alert');
+    const btn = document.getElementById('mk-btn');
+    al.style.display = 'none';
+
+    const source = mkDetectSource(url);
+    if (!source) {
+      al.textContent = 'Por favor ingresa un enlace de sephora.com, amazon.com o un ASIN (ej: B08BHXG144)';
+      al.style.display = 'block'; return;
+    }
+
+    if (source === 'amazon') {
+      await mkBuscarAmazon(url);
+      return;
+    }
+
+    // ── Sephora ──
+    const loadMsg = document.getElementById('mk-loading-msg');
+    loadMsg.textContent = 'Conectando con Sephora...';
+    document.getElementById('mk-loading').classList.add('visible');
+    document.getElementById('mk-welcome').style.display = 'none';
+    document.getElementById('mk-product').classList.remove('visible');
+    btn.disabled = true; btn.textContent = 'Buscando...';
+    mkVariantImagesCache = {};
+
+    /* ── Limpiar producto anterior ── */
+    document.getElementById('mk-brand').textContent = '';
+    document.getElementById('mk-title').textContent = '';
+    document.getElementById('mk-rating').style.display = 'none';
+    document.getElementById('mk-price-inline').textContent = '';
+    document.getElementById('mk-main-img').src = '';
+    document.getElementById('mk-gallery-thumbs').innerHTML = '';
+    document.getElementById('mk-img-count').textContent = '';
+    document.getElementById('mk-variants-grid').innerHTML = '';
+    document.getElementById('mk-variants-wrap').style.display = 'none';
+    document.getElementById('mk-color-label').style.display = 'none';
+    document.getElementById('mk-category').textContent = '';
+
+    let gotProduct = false; // safety flag
+    let gotError = false;
+
+    try {
+      const res = await fetch(`${MK_API}/api/scrape-stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      if (!res.ok || !res.headers.get('content-type')?.includes('text/event-stream')) {
+        // Intentar respuesta JSON directa (no SSE)
+        try {
+          const data = await res.json();
+          if (data && data.error) {
+            al.textContent = data.error;
+            al.style.display = 'block'; gotError = true;
+          }
+        } catch(_) {}
+        if (!gotError) await mkBuscarClassic(url);
+        gotProduct = document.getElementById('mk-product').classList.contains('visible');
+        return;
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      mkData = { success: false, source: 'sephora', url: url, images: [], color_variants: [] };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split('\n\n');
+        buffer = events.pop();
+        for (const evt of events) {
+          if (!evt.trim()) continue;
+          let eventType = 'message', eventData = '';
+          for (const line of evt.split('\n')) {
+            if (line.startsWith('event: ')) eventType = line.slice(7).trim();
+            if (line.startsWith('data: ')) eventData = line.slice(6);
+          }
+          if (!eventData) continue;
+          try {
+            const payload = JSON.parse(eventData);
+            if (eventType === 'basic') {
+              loadMsg.textContent = 'Obteniendo imágenes...';
+              Object.assign(mkData, payload);
+              mkRenderBasic(mkData);
+              gotProduct = true;
+            } else if (eventType === 'images') {
+              loadMsg.textContent = 'Cargando variantes...';
+              mkData.images = payload.images || [];
+              mkRenderImages(mkData.images);
+            } else if (eventType === 'variants') {
+              mkData.color_variants = payload.color_variants || [];
+              mkRenderVariants(mkData);
+            } else if (eventType === 'complete') {
+              mkData = payload; mkData.success = true;
+              mkRenderBasic(mkData);
+              mkRenderImages(mkData.images || []);
+              mkRenderVariants(mkData);
+              mkRecalc();
+              gotProduct = true;
+            } else if (eventType === 'error') {
+              al.textContent = payload.error || 'Error al obtener producto.';
+              al.style.display = 'block';
+              gotError = true;
+            }
+          } catch(e) { console.warn('SSE parse:', e); }
+        }
+      }
+    } catch(e) {
+      console.warn('SSE failed:', e);
+      if (!gotProduct) {
+        try { await mkBuscarClassic(url); gotProduct = document.getElementById('mk-product').classList.contains('visible'); } catch(e2) {
+          al.textContent = 'Error de conexión. El servidor puede estar iniciando, intenta en 30 segundos.';
+          al.style.display = 'block';
+          gotError = true;
+        }
+      }
+    } finally {
+      document.getElementById('mk-loading').classList.remove('visible');
+      btn.disabled = false; btn.textContent = 'Buscar Producto';
+      if (!gotProduct) {
+        document.getElementById('mk-welcome').style.display = '';
+        if (!gotError) {
+          al.textContent = 'No se pudo conectar con el servidor. Puede estar iniciando — intenta de nuevo en unos segundos.';
+          al.style.display = 'block';
+        }
+      }
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  BUSCADOR AMAZON (RapidAPI: real-time-amazon-data)
+  //
+  //  Normaliza la respuesta al mismo formato mkData que usa Sephora
+  //  para que el resto del flujo (render, cart) funcione igual.
+  // ═══════════════════════════════════════════════════════════════
+  async function mkBuscarAmazon(input) {
+    const al  = document.getElementById('mk-alert');
+    const btn = document.getElementById('mk-btn');
+    al.style.display = 'none';
+
+    const asin = mkExtractAsin(input);
+    if (!asin) {
+      al.textContent = 'No se pudo extraer el ASIN del enlace de Amazon. Intenta pegar la URL completa o solo el ASIN (ej: B08BHXG144).';
+      al.style.display = 'block'; return;
+    }
+
+    MK.log('Amazon ASIN detectado:', asin);
+    const loadMsg = document.getElementById('mk-loading-msg');
+    loadMsg.textContent = 'Consultando Amazon...';
+    document.getElementById('mk-loading').classList.add('visible');
+    document.getElementById('mk-welcome').style.display = 'none';
+    document.getElementById('mk-product').classList.remove('visible');
+    btn.disabled = true; btn.textContent = 'Buscando...';
+
+    // ── Limpiar UI ──
+    ['mk-brand','mk-title','mk-price-inline','mk-img-count'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.textContent = '';
+    });
+    document.getElementById('mk-rating').style.display = 'none';
+    const mimg = document.getElementById('mk-main-img'); if (mimg) mimg.src = '';
+    document.getElementById('mk-gallery-thumbs').innerHTML = '';
+    document.getElementById('mk-variants-grid').innerHTML = '';
+    document.getElementById('mk-variants-wrap').style.display = 'none';
+    document.getElementById('mk-color-label').style.display = 'none';
+    document.getElementById('mk-category').textContent = '';
+    mkVariantImagesCache = {};
+
+    try {
+      const apiUrl = `https://${MK_AMZN_HOST}/product-details?asin=${asin}&country=US&autoselect_variant=true`;
+      const res = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'x-rapidapi-host': MK_AMZN_HOST,
+          'x-rapidapi-key' : MK_AMZN_KEY,
+        }
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`RapidAPI ${res.status}: ${errText.slice(0, 120)}`);
+      }
+
+      const json = await res.json();
+      MK.log('Amazon raw response:', json);
+
+      if (json.status !== 'OK' || !json.data) {
+        throw new Error(json.message || 'La API de Amazon no retornó datos válidos.');
+      }
+
+      const d = json.data;
+
+      // ── Normalizar precio ──
+      const parsePx = s => s ? parseFloat(String(s).replace(/[^0-9.]/g, '')) || 0 : 0;
+      const price   = parsePx(d.product_price || d.price);
+
+      // ── Imágenes ──
+      let images = [];
+      if (Array.isArray(d.product_photos) && d.product_photos.length) {
+        images = d.product_photos;
+      } else if (d.product_photo) {
+        images = [d.product_photo];
+      }
+
+      // ── Categoría ──
+      let category = 'Amazon';
+      if (Array.isArray(d.category_path) && d.category_path.length) {
+        category = d.category_path.map(c => c.name || c).join(' > ');
+      } else if (d.product_information?.Category) {
+        category = d.product_information.Category;
+      }
+
+      // ── Peso ──
+      const weightStr = d.product_information?.['Item Weight']
+                     || d.product_details?.['Item Weight']
+                     || d.product_details?.['Weight']
+                     || (Array.isArray(d.specifications)
+                           ? (d.specifications.find(s => /weight/i.test(s.name))?.value || '')
+                           : '') || '';
+      const weight_lbs = mkParseWeightLbs(weightStr);
+      if (weight_lbs) MK.log(`Peso detectado: ${weight_lbs.toFixed(3)} lb ("${weightStr}")`);
+
+      // ── Marca ──
+      const brand =
+        d.brand ||
+        d.product_details?.Brand ||
+        d.product_information?.Brand ||
+        (d.sub_title?.text ? d.sub_title.text.replace(/^Visit the|Store$/gi, '').trim() : '') ||
+        '';
+
+      // ── Variantes (color / tamaño) ──
+      const color_variants = [];
+      if (d.product_variations) {
+        // Buscar el eje de color o tamaño
+        const axes = Object.entries(d.product_variations);
+        const preferredAxis = axes.find(([k]) => /color|colour|shade/i.test(k))
+                           || axes.find(([k]) => /size|tamaño|oz|ml/i.test(k))
+                           || axes[0];
+        if (preferredAxis) {
+          const [axisName, options] = preferredAxis;
+          (Array.isArray(options) ? options : []).forEach(opt => {
+            color_variants.push({
+              label      : opt.value || opt.name || opt,
+              sku_id     : opt.asin || '',
+              out_of_stock: opt.is_available === false,
+              swatch     : opt.swatch_image || opt.image || null,
+              selected   : opt.asin === asin,
+              price      : price,
+            });
+          });
+        }
+      }
+
+      // ── Construir mkData normalizado ──
+      mkData = {
+        success       : true,
+        source        : 'amazon',
+        url           : d.product_url || `https://www.amazon.com/dp/${asin}`,
+        asin          : asin,
+        name          : d.product_title || '',
+        brand         : brand,
+        price         : price ? `$${price.toFixed(2)}` : '',
+        price_numeric : price,
+        rating        : parseFloat(d.product_star_rating) || 0,
+        review_count  : parseInt(d.product_num_ratings) || 0,
+        images        : images,
+        color_variants: color_variants,
+        category      : category,
+        weight_lbs    : weight_lbs,
+        weight_str    : weightStr,
+      };
+
+      mkRenderBasic(mkData);
+      mkRenderImages(images);
+      if (color_variants.length) mkRenderVariants(mkData);
+      mkRenderSourceBadge('amazon');
+      mkRecalc();
+      MK.log('Amazon producto cargado:', mkData.name);
+
+    } catch(e) {
+      MK.err('mkBuscarAmazon:', e);
+      al.textContent = '❌ ' + (e.message || 'Error al consultar Amazon. Verifica el enlace o ASIN.');
+      al.style.display = 'block';
+      document.getElementById('mk-welcome').style.display = '';
+    } finally {
+      document.getElementById('mk-loading').classList.remove('visible');
+      btn.disabled = false; btn.textContent = 'Buscar Producto';
+    }
+  }
+
+  async function mkBuscarClassic(url) {
+    const al = document.getElementById('mk-alert');
+    const res = await fetch(`${MK_API}/api/scrape`, {
+      method: 'POST', headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ url })
+    });
+    const data = await res.json();
+    if (!data.success) {
+      al.textContent = data.error || 'No pudimos obtener el producto.';
+      al.style.display = 'block';
+      document.getElementById('mk-welcome').style.display = ''; return;
+    }
+    mkData = data;
+    mkRenderBasic(data);
+    mkRenderImages(data.images || []);
+    mkRenderVariants(data);
+    mkRecalc();
+  }
+
+  document.getElementById('mk-url').addEventListener('keydown', e => { if (e.key === 'Enter') mkBuscar(); });
+
+  /* ═══════ RENDER PROGRESIVO ═══════ */
+
+  // Muestra un badge visual indicando la fuente del producto
+  function mkRenderSourceBadge(source) {
+    const el = document.getElementById('mk-source-badge');
+    if (!el) return;
+    if (source === 'amazon') {
+      el.innerHTML = '<span class="mk-source-badge amazon">📦 Amazon USA</span>';
+    } else if (source === 'sephora') {
+      el.innerHTML = '<span class="mk-source-badge sephora">💄 Sephora USA</span>';
+    } else {
+      el.innerHTML = '';
+    }
+  }
+
+  function mkRenderBasic(d) {
+    document.getElementById('mk-brand').textContent = d.brand || '';
+    document.getElementById('mk-title').textContent = d.name || '';
+    // Badge de fuente (si ya está definida antes de llamar a mkRenderBasic)
+    if (d.source) mkRenderSourceBadge(d.source);
+    else mkRenderSourceBadge('sephora'); // default Sephora
+    const ratingEl = document.getElementById('mk-rating');
+    if (d.rating) {
+      const full = Math.floor(d.rating), half = d.rating - full >= 0.3 ? '½' : '';
+      ratingEl.innerHTML = `<span class="stars">${'★'.repeat(full)}${half}${'☆'.repeat(5-full-(half?1:0))}</span> ${d.rating} · ${d.review_count||0} reseñas`;
+      ratingEl.style.display = '';
+    } else ratingEl.style.display = 'none';
+    document.getElementById('mk-price-inline').textContent = d.price || '';
+    const catEl = document.getElementById('mk-category');
+    catEl.textContent = d.category || 'Maquillaje';
+    const arr = new Date(); arr.setDate(arr.getDate() + 21);
+    const m = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    document.getElementById('mk-arrival').textContent = `${arr.getDate()} de ${m[arr.getMonth()]} del ${arr.getFullYear()}`;
+    mkQtyVal = 1; document.getElementById('mk-qty').textContent = '1';
+    mkRecalc();
+    document.getElementById('mk-product').classList.add('visible');
+    document.getElementById('mk-welcome').style.display = 'none';
+  }
+
+  /* ── Imágenes de galería ── */
+  function mkRenderImages(imgs) {
+    const mainImg = document.getElementById('mk-main-img');
+    const gThumbs = document.getElementById('mk-gallery-thumbs');
+    gThumbs.innerHTML = '';
+    if (!imgs || imgs.length === 0) return;
+    mainImg.src = imgs[0];
+    document.getElementById('mk-img-count').textContent = imgs.length + ' fotos';
+    imgs.forEach((url, i) => {
+      const t = document.createElement('img');
+      t.src = url; t.className = 'mk-gallery-thumb' + (i===0?' active':'');
+      t.loading = 'lazy';
+      t.onclick = () => {
+        mainImg.onerror = null; mainImg.src = url;
+        gThumbs.querySelectorAll('.mk-gallery-thumb').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+      };
+      t.onerror = function(){ this.style.display='none'; };
+      gThumbs.appendChild(t);
+    });
+  }
+
+  /* ── Variantes (grid unificado) ── */
+  function mkRenderVariants(d) {
+    const variants = d.color_variants || [];
+    const grid = document.getElementById('mk-variants-grid');
+    const wrap = document.getElementById('mk-variants-wrap');
+    grid.innerHTML = '';
+    if (variants.length === 0) { wrap.style.display = 'none'; return; }
+
+    const isSize = variants.some(v => /oz|ml|g\b|fl/i.test(v.label||''));
+    wrap.style.display = '';
+    document.getElementById('mk-variants-label').textContent = isSize ? 'Tamaño / Presentación' : 'Tono / Variante';
+
+    // Ajustar columnas según cantidad
+    if (variants.length <= 4) grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    else grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+
+    variants.forEach((v, i) => {
+      const card = document.createElement('div');
+      const lbl = (v.label||`Variante ${i+1}`).replace(/^Select\s*/i,'');
+      card.className = 'mk-variant-card' + (v.selected?' picked':'') + (v.out_of_stock?' oos':'');
+      card.dataset.idx = i;
+
+      // Contenido de la card
+      let html = '';
+      const swatchSrc = v.swatch || v.image;
+      if (swatchSrc) {
+        html += `<img class="mk-vc-img" src="${swatchSrc}" loading="lazy" onerror="this.style.display='none'">`;
+      }
+      // Separar número/código del nombre del tono (ej: "1 - fair, cool peach")
+      const dashIdx = lbl.indexOf(' - ');
+      let name = lbl, desc = '';
+      if (dashIdx > 0) {
+        name = lbl.slice(0, dashIdx);
+        desc = lbl.slice(dashIdx + 3);
+      }
+      html += `<span class="mk-vc-label">${name}</span>`;
+      if (desc) html += `<span class="mk-vc-desc">${desc}</span>`;
+      if (v.price && v.price > 0) html += `<span class="mk-vc-price">$${v.price.toFixed(2)}</span>`;
+      card.innerHTML = html;
+
+      if (!v.out_of_stock) {
+        card.onclick = async () => {
+          // Cancelar request anterior si existe
+          if (mkActiveRequest) mkActiveRequest.cancelled = true;
+          const thisRequest = { cancelled: false };
+          mkActiveRequest = thisRequest;
+
+          // Marcar tono seleccionado
+          grid.querySelectorAll('.mk-variant-card').forEach(x => x.classList.remove('picked'));
+          card.classList.add('picked');
+
+          // Actualizar precio y label
+          const isSize = variants.some(vr => /oz|ml|g\b|fl/i.test(vr.label||''));
+          const lbl = (v.label||'').replace(/^Select\s*/i,'');
+          if (v.price && v.price > 0) {
+            mkData.price_numeric = v.price;
+            document.getElementById('mk-price-inline').textContent = '$' + v.price.toFixed(2);
+          }
+          mkUpdateColorLabel(lbl, isSize);
+          mkRecalc();
+
+          // Mostrar loading en imagen principal
+          const mainImg = document.getElementById('mk-main-img');
+          const thumbs = document.getElementById('mk-gallery-thumbs');
+          mainImg.style.opacity = '0.4';
+          mainImg.style.transition = 'opacity 0.2s';
+
+          // Fallback inmediato: mostrar swatch mientras carga
+          if (v.swatch) {
+            mainImg.src = v.swatch.replace('-swatch', '-zoom').replace('_swatch', '_zoom');
+          } else if (v.image) {
+            mainImg.src = mkToFullImage(v.image);
+          }
+
+          if (v.sku_id) {
+            // Usar imágenes pre-extraídas del scrape inicial
+            if (v.images && v.images.length > 1) {
+              mkVariantImagesCache[v.sku_id] = v.images;
+              mkRenderImages(v.images);
+              mainImg.style.opacity = '1';
+              return;
+            }
+            // Cache local
+            if (mkVariantImagesCache[v.sku_id]) {
+              mkRenderImages(mkVariantImagesCache[v.sku_id]);
+              mainImg.style.opacity = '1';
+              return;
+            }
+
+            try {
+              const res = await fetch(`${MK_API}/api/variant-images`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+                body: JSON.stringify({ url: mkData.url, sku_id: v.sku_id })
+              });
+              const data = await res.json();
+
+              // Si el usuario ya cambió de variante, ignorar
+              if (thisRequest.cancelled) return;
+
+              if (data.success && data.images && data.images.length > 0) {
+                mkVariantImagesCache[v.sku_id] = data.images;
+                // Actualizar imagen principal
+                mainImg.src = data.images[0];
+                mainImg.style.opacity = '1';
+
+                // Actualizar miniaturas
+                thumbs.innerHTML = '';
+                document.getElementById('mk-img-count').textContent = data.images.length + ' fotos';
+                data.images.forEach((imgUrl, idx) => {
+                  const img = document.createElement('img');
+                  img.src = imgUrl;
+                  img.className = 'mk-gallery-thumb' + (idx === 0 ? ' active' : '');
+                  img.loading = 'lazy';
+                  img.onclick = () => {
+                    mainImg.src = imgUrl;
+                    thumbs.querySelectorAll('.mk-gallery-thumb').forEach(t => t.classList.remove('active'));
+                    img.classList.add('active');
+                  };
+                  img.onerror = function() { this.style.display = 'none'; };
+                  thumbs.appendChild(img);
+                });
+
+                // Actualizar precio si la variante tiene precio diferente
+                if (v.price && v.price > 0) {
+                  mkData.price_numeric = v.price;
+                  document.getElementById('mk-price-inline').textContent = '$' + v.price.toFixed(2);
+                  mkRecalc();
+                }
+              } else {
+                mainImg.style.opacity = '1';
+              }
+            } catch(e) {
+              if (!thisRequest.cancelled) {
+                mainImg.style.opacity = '1';
+              }
+            }
+          } else {
+            mainImg.style.opacity = '1';
+          }
+        };
+      }
+      grid.appendChild(card);
+    });
+
+    // Seleccionar la variante activa
+    const sel = variants.find(v => v.selected);
+    if (sel) {
+      mkUpdateColorLabel(sel.label, isSize);
+      if (sel.price && sel.price > 0) {
+        mkData.price_numeric = sel.price;
+        document.getElementById('mk-price-inline').textContent = '$' + sel.price.toFixed(2);
+      }
+    }
+  }
+
+  /* ── Helpers de imagen ── */
+  function mkToFullImage(url) {
+    if (!url) return '';
+    if (url.includes('-main-zoom')) return url;
+    if (url.includes('+sw')) return url.replace(/\+sw\.[^.]+$/, '-main-zoom.jpg');
+    const m = url.match(/\/s(\d+)\./);
+    if (m) return `https://www.sephora.com/productimages/sku/s${m[1]}-main-zoom.jpg`;
+    return url;
+  }
+
+  function mkUpdateColorLabel(lbl, isSize) {
+    const el = document.getElementById('mk-color-label');
+    if (lbl) {
+      el.innerHTML = `${isSize?'Tamaño':'Color'}: <strong>${lbl.replace(/^Select\s*/i,'')}</strong>`;
+      el.style.display = '';
+    } else el.style.display = 'none';
+  }
+
+  /* ── Peso: parsear string → libras ── */
+  function mkParseWeightLbs(str) {
+    if (!str) return 0;
+    const s = String(str).toLowerCase();
+    const n = parseFloat(s) || 0;
+    if (!n) return 0;
+    if (/oz|ounce/.test(s))                          return n / 16;
+    if (/\bkg|kilogram/.test(s))                     return n * 2.20462;
+    if (/\bg\b|gram/.test(s) && !/lb|pound/.test(s)) return n * 0.00220462;
+    return n; // asume lbs
+  }
+
+  /* ── Calcular envío internacional ── */
+  function mkCalcIntlShip(weightLbs, qty) {
+    if (!weightLbs || weightLbs <= 0) return MK_INTL_SHIP; // fallback fijo
+    const totalLbs = weightLbs * Math.max(1, qty || 1);
+    return Math.max(MK_SHIP_MIN, parseFloat((totalLbs * MK_SHIP_RATE_LB).toFixed(2)));
+  }
+
+  /* ── Recalcular precios ── */
+  function mkRecalc() {
+    const price = mkData ? (mkData.price_numeric || 0) : 0;
+    const q = mkQtyVal;
+    const prod = price * q, tax = prod * MK_TAX_RATE, sShip = 0;
+    const usa   = prod + tax + sShip;
+    const intl  = mkCalcIntlShip(mkData?.weight_lbs, q);
+    const imp   = 0;
+    const traida = intl + imp, proc = prod * MK_COMMISSION;
+    const usd = usa + traida + proc, pen = usd * MK_RATE;
+
+    // Actualizar etiqueta de peso
+    const wEl = document.getElementById('bd-weight');
+    if (wEl) {
+      if (mkData?.weight_lbs && mkData.weight_lbs > 0) {
+        const kgTotal = (mkData.weight_lbs * q * 0.453592).toFixed(2);
+        const lbTotal = (mkData.weight_lbs * q).toFixed(2);
+        wEl.textContent = `(${lbTotal} lb / ${kgTotal} kg)`;
+      } else {
+        wEl.textContent = '(peso estimado no disponible)';
+      }
+    }
+
+    document.getElementById('bd-prod').textContent      = `$ ${prod.toFixed(2)}`;
+    document.getElementById('bd-tax').textContent        = `$ ${tax.toFixed(2)}`;
+    document.getElementById('bd-store-ship').textContent = sShip > 0 ? `$ ${sShip.toFixed(2)}` : 'Gratis';
+    document.getElementById('bd-store-ship').className   = 'val' + (sShip===0?' free':'');
+    document.getElementById('bd-usa').textContent        = `$ ${usa.toFixed(2)}`;
+    document.getElementById('bd-ship').textContent       = `$ ${intl.toFixed(2)}`;
+    document.getElementById('bd-imp').textContent        = imp > 0 ? `$ ${imp.toFixed(2)}` : 'Gratis';
+    document.getElementById('bd-imp').className          = 'val' + (imp===0?' free':'');
+    document.getElementById('bd-traida').textContent     = `$ ${traida.toFixed(2)}`;
+    document.getElementById('bd-proc').textContent       = `$ ${proc.toFixed(2)}`;
+    document.getElementById('bd-usd').textContent        = `$ ${usd.toFixed(2)}`;
+    document.getElementById('bd-rate').textContent       = `$1 = ${MK_SYMBOL} ${MK_RATE.toFixed(4)}`;
+    document.getElementById('bd-pen').textContent        = `${MK_SYMBOL} ${pen.toFixed(2)}`;
+  }
+
+  function mkQty(d) { mkQtyVal = Math.max(1, mkQtyVal + d); document.getElementById('mk-qty').textContent = mkQtyVal; mkRecalc(); }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  HELPERS DE CARRITO
+  // ═══════════════════════════════════════════════════════════════
+  function mkGetSelectedVariant() {
+    const card = document.querySelector('.mk-variant-card.picked');
+    if (!card) return { label: 'N/A', sku_id: '' };
+    const idx = parseInt(card.dataset.idx || '0');
+    const v   = (mkData?.color_variants || [])[idx] || {};
+    const lbl = card.querySelector('.mk-vc-label')?.textContent || '';
+    const dsc = card.querySelector('.mk-vc-desc')?.textContent  || '';
+    return { label: (lbl + (dsc ? ' ' + dsc : '')).trim(), sku_id: v.sku_id || '', image: v.image || '' };
+  }
+
+  function mkProps(variantId) {
+    const sv     = mkGetSelectedVariant();
+    // Usar imagen actualmente visible (variante seleccionada), no siempre la primera
+    const imgUrl = document.getElementById('mk-main-img')?.src || mkData.images?.[0] || '';
+    return {
+      'Color/Variante'    : sv.label,
+      'Precio USD'        : document.getElementById('bd-usd')?.textContent  || '',
+      'Total a pagar'     : document.getElementById('bd-pen')?.textContent  || '',
+      'Categoría'         : document.getElementById('mk-category')?.textContent.trim() || '',
+      'Indicaciones'      : document.getElementById('mk-notes')?.value || 'Sin indicaciones',
+      '_Fuente'           : mkData.source === 'amazon' ? 'Amazon' : 'Sephora',
+      '_Producto'         : mkData.name  || '',
+      '_Marca'            : mkData.brand || '',
+      '_Link'             : mkData.url   || '',
+      '_ASIN'             : mkData.asin  || '',
+      '_SKU'              : sv.sku_id,
+      '_Peso (lbs)'       : mkData.weight_lbs ? String(mkData.weight_lbs.toFixed(3)) : '',
+      '_Imagen'           : imgUrl,
+      '_Precio base USD'  : mkData.price || '',
+      '_Cantidad'         : String(mkQtyVal),
+      '_Pool Variant'     : String(variantId),
+    };
+  }
+
+  function mkUpdateCartCount(count = null) {
+    // Usa la misma lógica de CartUtils del tema (cart-count-drawer usa formato "(n)")
+    const set = n => document.querySelectorAll('.cart-count').forEach(el => {
+      el.innerHTML = el.classList.contains('cart-count-drawer')
+        ? `(${n})`
+        : (n > 100 ? '~' : n);
+      const h = el.closest('[hidden]'); if (h) h.hidden = false;
+    });
+    if (count !== null) return set(count);
+    fetch('/cart.js').then(r => r.json()).then(c => set(c.item_count)).catch(() => {});
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  POLLING: esperar que /variants/{id}.js devuelva 200
+  //  Evita que /cart/add.js rechace silenciosamente un variant
+  //  que Shopify aún no propagó (~1-3 s en placeholders nuevos)
+  // ═══════════════════════════════════════════════════════════════
+  async function mkPollVariant(variantId, max = 10, interval = 600) {
+    for (let i = 0; i < max; i++) {
+      try {
+        const r = await fetch(`/variants/${variantId}.js`);
+        if (r.ok) { MK.log(`Variant OK en intento ${i + 1}`); return true; }
+        MK.log(`Variant ${i + 1}/${max}: status=${r.status}`);
+      } catch(e) { MK.warn('Variant poll error:', e.message); }
+      await new Promise(r => setTimeout(r, interval));
+    }
+    MK.err(`Variant ${variantId} no respondió después de ${max} intentos`);
+    return false;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  POLLING: esperar que /cart.js tenga ≥ expectedCount items
+  //  Resuelve el race condition con Avada (Clear-Site-Data)
+  // ═══════════════════════════════════════════════════════════════
+  async function mkPollCartCount(expectedCount, max = 10, interval = 400) {
+    for (let i = 0; i < max; i++) {
+      try {
+        const cart = await fetch('/cart.js').then(r => r.json());
+        MK.log(`Cart poll ${i + 1}/${max}: item_count=${cart.item_count} esperado≥${expectedCount}`);
+        if (cart.item_count >= expectedCount) return true;
+      } catch(e) { MK.warn('Cart poll error:', e.message); }
+      await new Promise(r => setTimeout(r, interval));
+    }
+    return false;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  PATCH MINICART: reemplaza imagen + título del placeholder
+  //  con los datos reales del producto Sephora.
+  //
+  //  El tema usa id="minicart__product-{item.key}" para cada item.
+  //  Shopify renderiza la imagen del producto placeholder, pero
+  //  nosotros guardamos la imagen real en la propiedad "_Imagen".
+  //  También reconstruimos el título con Marca y Producto Sephora.
+  // ═══════════════════════════════════════════════════════════════
+  async function mkPatchMinicart() {
+    try {
+      const cart = await fetch('/cart.js').then(r => r.json());
+      let patched = 0;
+      cart.items.forEach(item => {
+        const props  = item.properties || {};
+        const imgSrc = props['_Imagen'];
+        if (!imgSrc) return; // no es un item nuestro
+
+        const el = document.getElementById(`minicart__product-${item.key}`);
+        if (!el) return;
+
+        // 1. Reemplazar imagen con la de la variante seleccionada
+        el.querySelectorAll('.minicart__product__image img').forEach(img => {
+          img.removeAttribute('srcset');
+          img.removeAttribute('sizes');
+          img.src = imgSrc;
+          img.style.objectFit = 'cover';
+        });
+
+        // 2. Actualizar título: "Marca – Producto Sephora"
+        const brand    = props['_Marca']    || '';
+        const prodName = props['_Producto'] || item.product_title || '';
+        const variant  = props['Color/Variante'] || '';
+        if (prodName) {
+          const titleLink = el.querySelector('.minicart__product-name a');
+          if (titleLink) {
+            titleLink.textContent = brand ? `${brand} – ${prodName}` : prodName;
+          }
+          // Mostrar variante si no está en el bloque de opciones del tema
+          const optionWrap = el.querySelector('.minicart__item-variant');
+          if (optionWrap && variant && variant !== 'N/A') {
+            // Verificar que no esté ya visible
+            if (!optionWrap.textContent.includes(variant)) {
+              const vDiv = document.createElement('div');
+              vDiv.className = 'product-option';
+              vDiv.innerHTML = `<span>Color/Variante: </span><span>${variant}</span>`;
+              optionWrap.prepend(vDiv);
+            }
+          }
+        }
+        patched++;
+      });
+      if (patched > 0) MK.log(`Minicart parcheado: ${patched} item(s) ✓`);
+    } catch(e) {
+      MK.warn('mkPatchMinicart falló:', e.message);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  ABRIR MINICART
+  //
+  //  Este tema usa <cart-notification id="minicart_wrapper"> (NO Dawn).
+  //  El elemento tiene un método open() nativo que gestiona la
+  //  animación del drawer y los listeners de cierre.
+  //
+  //  Flujo:
+  //  1. Esperar 800ms (Avada necesita tiempo tras Clear-Site-Data)
+  //  2. Cargar HTML fresco de la sección "minicart-form" (no-store)
+  //     — o usar el HTML que ya vino en la respuesta de cart/add.js
+  //  3. Inyectar en #minicart-form ANTES de abrir
+  //  4. Llamar a cartNotification.open()
+  // ═══════════════════════════════════════════════════════════════
+  async function mkOpenDrawer(addSections = null) {
+    MK.log('Abriendo minicart...');
+
+    // ── Esperar que Avada termine de procesar Clear-Site-Data ──
+    await new Promise(r => setTimeout(r, 800));
+
+    const cartEl = document.querySelector('cart-notification');
+
+    // ── HTML fresco: primero usa el que ya vino en cart/add.js ──
+    let freshSectionHtml = addSections?.['minicart-form'] || null;
+
+    if (!freshSectionHtml) {
+      try {
+        const data = await fetch(
+          `${window.location.pathname}?sections=minicart-form`,
+          { cache: 'no-store' }
+        ).then(r => r.json());
+        freshSectionHtml = data['minicart-form'];
+        MK.log('minicart-form cargado via fetch ✓');
+      } catch(e) {
+        MK.warn('No se pudo cargar sección fresca:', e.message);
+      }
+    } else {
+      MK.log('minicart-form disponible desde respuesta de add ✓');
+    }
+
+    // ── Inyectar HTML en #minicart-form ──
+    if (freshSectionHtml) {
+      try {
+        const target = document.getElementById('minicart-form');
+        if (target) {
+          const parsed = new DOMParser().parseFromString(freshSectionHtml, 'text/html');
+          const src    = parsed.querySelector('#minicart-form');
+          if (src) {
+            target.innerHTML = src.innerHTML;
+            MK.log('#minicart-form inyectado con contenido fresco ✓');
+          }
+        }
+      } catch(e) {
+        MK.warn('Inyección de minicart-form falló:', e.message);
+      }
+    }
+
+    // ── Parchar imágenes y títulos con los datos reales de Sephora ──
+    await mkPatchMinicart();
+
+    // ── Abrir via cart-notification.open() (método nativo del tema) ──
+    if (cartEl && typeof cartEl.open === 'function') {
+      await cartEl.open();
+      MK.log('Minicart abierto via cart-notification.open() ✓');
+      return;
+    }
+
+    // ── Fallback: click en .minicart__action ──
+    const btn = document.querySelector('.minicart__action');
+    if (btn) {
+      btn.click();
+      MK.log('Minicart abierto via .minicart__action click ✓');
+      return;
+    }
+
+    // ── Fallback final: toast ──
+    MK.warn('No se encontró cart-notification → mostrando toast');
+    mkShowCartToast();
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  CORE: prepare → poll variant → cart/add (o change) → poll cart → drawer
+  // ═══════════════════════════════════════════════════════════════
+  async function mkAddToCart() {
+    // ── 1. Calcular precio total en PEN ──
+    const price    = mkData?.price_numeric || 0;
+    const prod     = price  * mkQtyVal;
+    const tax      = prod   * MK_TAX_RATE;
+    const proc     = prod   * MK_COMMISSION;
+    const totalUsd = prod + tax + mkCalcIntlShip(mkData?.weight_lbs, mkQtyVal) + proc;
+    const totalPen = totalUsd * MK_RATE;
+
+    const sv       = mkGetSelectedVariant();
+    const imgUrl   = mkData.images?.[0] || document.getElementById('mk-main-img')?.src || '';
+    const stableId = mkStableId(mkData.url, sv.sku_id);
+
+    MK.log(`stableId="${stableId}" | sku="${sv.sku_id}" | S/ ${totalPen.toFixed(2)}`);
+
+    // ── 2. prepare-product (session_id estable → reused=true en 2ª llamada) ──
+    let variantId;
+    {
+      const res  = await fetch(`${MK_API}/api/prepare-product`, {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify({
+          session_id  : stableId,
+          price       : totalPen.toFixed(2),
+          title       : mkData.name || 'Producto Sephora',
+          image       : imgUrl,
+          sephora_url : mkData.url || '',
+        })
+      });
+      const data = await res.json();
+      MK.log('prepare-product →', data);
+      if (!data.success) throw new Error(data.error || 'prepare-product falló');
+      variantId = data.variant_id;
+      mkSetVid(stableId, variantId);
+    }
+
+    // ── 3. Esperar que el variant esté disponible en Shopify ──
+    MK.log(`Esperando variant ${variantId}...`);
+    const ready = await mkPollVariant(variantId);
+    if (!ready) throw new Error('El placeholder no está disponible en Shopify. Asegúrate de que el producto esté publicado.');
+
+    // ── 4. Leer carrito actual ──
+    const cartBefore = await fetch('/cart.js').then(r => r.json());
+    MK.log(`Carrito antes: ${cartBefore.item_count} items`);
+
+    const existente = cartBefore.items.find(i =>
+      String(i.variant_id) === String(variantId) ||
+      (sv.sku_id && i.properties?.['_SKU'] === sv.sku_id)
+    );
+
+    if (existente) {
+      // ── Existe → incrementar ──────────────────────────────────
+      const newQty = existente.quantity + mkQtyVal;
+      MK.log(`Item existente key=${existente.key}, qty ${existente.quantity}→${newQty}`);
+      const res = await fetch('/cart/change.js', {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify({ id: existente.key, quantity: newQty })
+      });
+      if (!res.ok) throw new Error(`cart/change.js HTTP ${res.status}`);
+      const changed = await res.json();
+      await mkPollCartCount(changed.item_count);
+      mkUpdateCartCount(changed.item_count);
+      await mkOpenDrawer();
+      return;
+    }
+
+    // ── 5. Agregar nuevo item (incluye sections para recibir HTML fresco) ──
+    MK.log(`Agregando variant=${variantId} qty=${mkQtyVal}`);
+    const addRes  = await fetch('/cart/add.js', {
+      method : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body   : JSON.stringify({
+        id           : variantId,
+        quantity     : mkQtyVal,
+        properties   : mkProps(variantId),
+        sections     : ['minicart-form'],
+        sections_url : window.location.pathname,
+      })
+    });
+    const addText = await addRes.text();
+    MK.log(`cart/add.js ${addRes.status}:`, addText.slice(0, 200));
+    if (!addRes.ok) {
+      let msg = `HTTP ${addRes.status}`;
+      try { const j = JSON.parse(addText); msg = j.description || j.message || msg; } catch {}
+      throw new Error(msg);
+    }
+
+    // Extraer secciones de la respuesta (vienen junto con el item agregado)
+    let addSections = null;
+    try {
+      const addJson = JSON.parse(addText);
+      if (addJson.sections) { addSections = addJson.sections; MK.log('Secciones recibidas en add response ✓'); }
+    } catch(e) { MK.warn('No se pudo parsear respuesta del add:', e.message); }
+
+    // ── 6. Polling — Avada puede disparar Clear-Site-Data ──
+    MK.log('Esperando confirmación de /cart.js...');
+    const expectedCount = cartBefore.item_count + mkQtyVal;
+    const confirmed = await mkPollCartCount(expectedCount, 10, 500);
+    if (!confirmed) MK.warn('Timeout esperando confirmación — abriendo de todas formas');
+
+    mkUpdateCartCount();
+
+    // ── 7. Abrir minicart (pasa las secciones para evitar fetch extra) ──
+    await mkOpenDrawer(addSections);
+  }
+
+  async function mkComprar() {
+    if (!mkData) return;
+    const btn = document.querySelector('.mk-btn-comprar');
+    btn.disabled = true; btn.textContent = 'Procesando...';
+    try {
+      await mkAddToCart();
+      btn.textContent = 'Redirigiendo...';
+      window.location.href = '/checkout';
+    } catch(e) {
+      MK.err('mkComprar:', e);
+      btn.disabled = false; btn.textContent = 'Comprar ahora';
+      mkShowAlert('❌ ' + e.message);
+    }
+  }
+
+  async function mkAgregar() {
+    if (!mkData) return;
+    if (mkAddingToCart) { MK.warn('Click ignorado — add en progreso'); return; }
+    mkAddingToCart = true;
+    const btn  = document.querySelector('.mk-btn-carrito');
+    const orig = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Agregando...';
+    try {
+      await mkAddToCart();
+      btn.textContent = '✓ ¡Agregado!';
+    } catch(e) {
+      MK.err('mkAgregar:', e);
+      btn.disabled = false; btn.textContent = orig;
+      mkShowAlert('❌ ' + e.message);
+    } finally {
+      setTimeout(() => { btn.disabled = false; btn.textContent = orig; mkAddingToCart = false; }, 2800);
+    }
+  }
+
+  /* ═══════ TOAST DE CONFIRMACIÓN ═══════ */
+  function mkShowCartToast() {
+    document.getElementById('mk-cart-toast')?.remove();
+    const sv    = mkGetSelectedVariant();
+    const toast = document.createElement('div');
+    toast.id    = 'mk-cart-toast';
+    toast.className = 'mk-cart-toast';
+    toast.innerHTML = `
+      <button class="mk-toast-close" onclick="this.parentElement.remove()">&times;</button>
+      <div class="mk-toast-body">
+        <div class="mk-toast-icon">✓</div>
+        <div class="mk-toast-info">
+          <strong>¡Agregado al carrito!</strong>
+          <div class="mk-toast-product">${mkData?.name || 'Producto Sephora'}${sv.label !== 'N/A' ? ' · ' + sv.label : ''}</div>
+          <div class="mk-toast-price">${document.getElementById('bd-pen')?.textContent || ''}</div>
+          <div class="mk-toast-actions">
+            <a href="/cart" class="mk-toast-btn primary">Ver carrito</a>
+            <button class="mk-toast-btn secondary" onclick="this.closest('.mk-cart-toast').remove()">Seguir comprando</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(toast);
+    setTimeout(() => document.getElementById('mk-cart-toast')?.remove(), 8000);
+  }
+
+  function mkShowAlert(msg) {
+    const al = document.getElementById('mk-alert');
+    if (!al) return;
+    al.textContent = msg; al.style.display = 'block';
+    setTimeout(() => { al.style.display = 'none'; }, 9000);
+  }
+
+  // ─── Exponer globalmente ──────────────────────────────────────
+  window.mkBuscar        = mkBuscar;
+  window.mkBuscarAmazon  = mkBuscarAmazon;
+  window.mkDetectSource  = mkDetectSource;
+  window.mkQty           = mkQty;
+  window.mkComprar       = mkComprar;
+  window.mkAgregar       = mkAgregar;
+  window.mkRecalc        = mkRecalc;
+  window.mkUpdateCartCount = mkUpdateCartCount;
+  window.mkShowCartToast = mkShowCartToast;
+  window.mkOpenDrawer    = mkOpenDrawer;
+  window.mkPatchMinicart = mkPatchMinicart;
+</script>
+
+{% schema %}
+{
+  "name": "Importador Sephora",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Banner superior"
+    },
+    {
+      "type": "image_picker",
+      "id": "banner_image",
+      "label": "Imagen del banner",
+      "info": "Dimensiones recomendadas: 1100 × 320 px (PC) · 768 × 220 px (tablet) · 480 × 180 px (móvil). Formato JPG/PNG/WebP."
+    },
+    {
+      "type": "text",
+      "id": "banner_alt",
+      "label": "Texto alternativo (accesibilidad)",
+      "default": "Mak Beauty — Importamos desde USA"
+    }
+  ],
+  "presets": [{ "name": "Importador Sephora" }]
+}
+{% endschema %}

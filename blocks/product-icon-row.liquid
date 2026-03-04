@@ -1,0 +1,240 @@
+{% liquid
+  assign block_st = block.settings
+  assign icon_width = block_st.icon_width
+  assign text_width_max = block_st.text_max_width
+  assign text_size = block_st.text_size
+  assign gap = block_st.icon_gap
+%}
+
+<div class="product-icons-block-wrapper-{{ block.id }}" {{ block.shopify_attributes }}>
+  
+  <style>
+    /* --- ESTILOS DESKTOP (Base) --- */
+    .product-icons-block-wrapper-{{ block.id }} {
+      background-color: {{ block_st.bg_color }};
+      border-radius: {{ block_st.border_radius }}px;
+      border: {{ block_st.border_thickness }}px {{ block_st.border_style }} {{ block_st.border_color }};
+      padding: {{ block_st.inner_padding }}px;
+      margin-top: {{ block_st.padding_top }}px;
+      margin-bottom: {{ block_st.padding_bottom }}px;
+      overflow: hidden;
+    }
+
+    .icons-row-{{ block.id }} {
+      display: flex;
+      flex-wrap: wrap;
+      gap: {{ gap }}px;
+      align-items: flex-start;
+      width: 100%;
+      justify-content: {{ block_st.alignment }};
+    }
+
+    .icon-item-{{ block.id }} {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      width: {{ text_width_max }}px; 
+      max-width: 100%;
+    }
+
+    .icon-media-{{ block.id }} {
+      width: {{ icon_width }}px;
+      height: {{ icon_width }}px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .icon-media-{{ block.id }} svg,
+    .icon-media-{{ block.id }} img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .icon-text-{{ block.id }} {
+      font-size: {{ text_size }}px;
+      line-height: 1.3;
+      color: {{ block_st.text_color }};
+      word-wrap: break-word;
+    }
+
+    /* --- ESTILOS MÓVIL (Overrides) --- */
+    @media screen and (max-width: 768px) {
+      .product-icons-block-wrapper-{{ block.id }} {
+        background-color: {{ block_st.bg_color_mobile }};
+        border-radius: {{ block_st.border_radius_mobile }}px;
+        border-width: {{ block_st.border_thickness_mobile }}px;
+        padding: {{ block_st.inner_padding_mobile }}px;
+      }
+
+      .icons-row-{{ block.id }} {
+        justify-content: {{ block_st.alignment_mobile }};
+        gap: {{ block_st.icon_gap_mobile }}px;
+      }
+
+      .icon-item-{{ block.id }} {
+        width: {{ block_st.text_max_width_mobile }}px;
+      }
+
+      .icon-media-{{ block.id }} {
+        width: {{ block_st.icon_width_mobile }}px;
+        height: {{ block_st.icon_width_mobile }}px;
+      }
+
+      .icon-text-{{ block.id }} {
+        font-size: {{ block_st.text_size_mobile }}px;
+      }
+    }
+  </style>
+
+  <div class="icons-row-{{ block.id }}">
+    {%- for i in (1..5) -%}
+      {%- assign svg_id = 'icon_svg_' | append: i -%}
+      {%- assign img_id = 'icon_image_' | append: i -%}
+      {%- assign txt_id = 'icon_text_' | append: i -%}
+      
+      {%- assign svg_code = block_st[svg_id] -%}
+      {%- assign image = block_st[img_id] -%}
+      {%- assign text = block_st[txt_id] -%}
+
+      {%- if svg_code != blank or image != blank or text != blank -%}
+        <div class="icon-item-{{ block.id }}">
+          <div class="icon-media-{{ block.id }}">
+            {%- if svg_code != blank -%}
+              {{ svg_code }}
+            {%- elsif image != blank -%}
+              <img src="{{ image | image_url: width: 200 }}" 
+                   alt="{{ text | escape }}" 
+                   width="{{ icon_width }}" 
+                   height="{{ icon_width }}" 
+                   loading="lazy">
+            {%- endif -%}
+          </div>
+          {%- if text != blank -%}
+            <span class="icon-text-{{ block.id }}">{{ text }}</span>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Fila de Iconos (5 Max)",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Alineación y Fondo (Desktop)"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alineación Horizontal",
+      "options": [
+        { "value": "flex-start", "label": "Izquierda" },
+        { "value": "center", "label": "Centro" },
+        { "value": "flex-end", "label": "Derecha" }
+      ],
+      "default": "flex-start"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Color de Fondo",
+      "default": "transparent"
+    },
+    {
+      "type": "range",
+      "id": "inner_padding",
+      "min": 0, "max": 60, "step": 2, "unit": "px",
+      "label": "Relleno Interno (Padding)",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Bordes (Desktop)"
+    },
+    {
+      "type": "range", "id": "border_thickness", "min": 0, "max": 10, "step": 1, "unit": "px", "label": "Grosor del borde", "default": 0 },
+    {
+      "type": "select", "id": "border_style", "label": "Estilo del borde",
+      "options": [
+        { "value": "solid", "label": "Sólido" },
+        { "value": "dashed", "label": "Guiones" },
+        { "value": "dotted", "label": "Puntos" }
+      ], "default": "solid"
+    },
+    { "type": "color", "id": "border_color", "label": "Color del borde", "default": "#000000" },
+    { "type": "range", "id": "border_radius", "min": 0, "max": 50, "step": 2, "unit": "px", "label": "Radius", "default": 0 },
+    {
+      "type": "header",
+      "content": "Tamaños de Contenido (Desktop)"
+    },
+    { "type": "range", "id": "icon_width", "min": 20, "max": 100, "step": 2, "unit": "px", "label": "Ancho Icono", "default": 40 },
+    { "type": "range", "id": "text_max_width", "min": 60, "max": 300, "step": 5, "unit": "px", "label": "Ancho Texto", "default": 120 },
+    { "type": "range", "id": "icon_gap", "min": 0, "max": 60, "step": 5, "unit": "px", "label": "Espacio Columnas", "default": 20 },
+    { "type": "range", "id": "text_size", "min": 10, "max": 20, "step": 1, "unit": "px", "label": "Tamaño Fuente", "default": 12 },
+    { "type": "color", "id": "text_color", "label": "Color Texto", "default": "#333333" },
+
+    {
+      "type": "header",
+      "content": "CONFIGURACIÓN MÓVIL (Exclusiva)"
+    },
+    {
+      "type": "select",
+      "id": "alignment_mobile",
+      "label": "Alineación Horizontal Móvil",
+      "options": [
+        { "value": "flex-start", "label": "Izquierda" },
+        { "value": "center", "label": "Centro" },
+        { "value": "flex-end", "label": "Derecha" }
+      ],
+      "default": "center"
+    },
+    { "type": "color", "id": "bg_color_mobile", "label": "Color Fondo Móvil", "default": "transparent" },
+    { "type": "range", "id": "inner_padding_mobile", "min": 0, "max": 60, "step": 2, "unit": "px", "label": "Padding Móvil", "default": 10 },
+    { "type": "range", "id": "border_thickness_mobile", "min": 0, "max": 10, "step": 1, "unit": "px", "label": "Grosor Borde Móvil", "default": 0 },
+    { "type": "range", "id": "border_radius_mobile", "min": 0, "max": 50, "step": 2, "unit": "px", "label": "Radius Móvil", "default": 0 },
+    { "type": "range", "id": "icon_width_mobile", "min": 20, "max": 100, "step": 2, "unit": "px", "label": "Ancho Icono Móvil", "default": 30 },
+    { "type": "range", "id": "text_max_width_mobile", "min": 60, "max": 300, "step": 5, "unit": "px", "label": "Ancho Texto Móvil", "default": 100 },
+    { "type": "range", "id": "icon_gap_mobile", "min": 0, "max": 60, "step": 5, "unit": "px", "label": "Espacio Columnas Móvil", "default": 10 },
+    { "type": "range", "id": "text_size_mobile", "min": 10, "max": 20, "step": 1, "unit": "px", "label": "Fuente Móvil", "default": 11 },
+
+    {
+      "type": "header",
+      "content": "Márgenes Externos (Generales)"
+    },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 50, "step": 5, "unit": "px", "label": "Margen Superior", "default": 10 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 50, "step": 5, "unit": "px", "label": "Margen Inferior", "default": 10 },
+    
+    { "type": "header", "content": "CONTENIDO: ICONO 1" },
+    { "type": "html", "id": "icon_svg_1", "label": "SVG 1" },
+    { "type": "image_picker", "id": "icon_image_1", "label": "Imagen 1" },
+    { "type": "text", "id": "icon_text_1", "label": "Texto 1" },
+    { "type": "header", "content": "ICONO 2" },
+    { "type": "html", "id": "icon_svg_2", "label": "SVG 2" },
+    { "type": "image_picker", "id": "icon_image_2", "label": "Imagen 2" },
+    { "type": "text", "id": "icon_text_2", "label": "Texto 2" },
+    { "type": "header", "content": "ICONO 3" },
+    { "type": "html", "id": "icon_svg_3", "label": "SVG 3" },
+    { "type": "image_picker", "id": "icon_image_3", "label": "Imagen 3" },
+    { "type": "text", "id": "icon_text_3", "label": "Texto 3" },
+    { "type": "header", "content": "ICONO 4" },
+    { "type": "html", "id": "icon_svg_4", "label": "SVG 4" },
+    { "type": "image_picker", "id": "icon_image_4", "label": "Imagen 4" },
+    { "type": "text", "id": "icon_text_4", "label": "Texto 4" },
+    { "type": "header", "content": "ICONO 5" },
+    { "type": "html", "id": "icon_svg_5", "label": "SVG 5" },
+    { "type": "image_picker", "id": "icon_image_5", "label": "Imagen 5" },
+    { "type": "text", "id": "icon_text_5", "label": "Texto 5" }
+  ],
+  "presets": [
+    { "name": "Fila de Iconos (Block)" }
+  ]
+}
+{% endschema %}
