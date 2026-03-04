@@ -1,0 +1,6 @@
+name = "Tema"
+description = "A custom Shopify theme"
+author = "darlez59"
+
+[type]
+id = "custom"
