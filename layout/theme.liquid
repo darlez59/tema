@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{{ page_title }}</title>
+    <link rel="canonical" href="{{ canonical_url }}">
+    {% if page_description %}
+      <meta name="description" content="{{ page_description | escape }}">
+    {% endif %}
+    
+    {{ 'theme.css' | asset_url | stylesheet_tag }}
+    {{ content_for_header }}
+  </head>
+
+  <body>
+    <a href="#MainContent" class="skip-to-content">{{ 'accessibility.skip_to_content' | t }}</a>
+
+    {% sections 'header-group' %}
+
+    <main id="MainContent" class="content-for-index">
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+
+    {{ 'theme.js' | asset_url | script_tag }}
+  </body>
+</html>
