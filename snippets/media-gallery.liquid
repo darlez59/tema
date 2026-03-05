@@ -56,6 +56,7 @@
   {% endif %}
 {% endif %}
 <media-gallery
+  id="MediaGallery-{{ section.id }}"
   class="block{% if enable_sticky_content_on_desktop %} sticky top-30{% endif %}"
   data-layout="{{ layout }}"
 >
@@ -203,3 +204,47 @@
     </zoom-action>
   {% endif %}
 </media-gallery>
+
+{% if product.metafields.custom.use_variants_image_group and type != 'single' and type != 'quickview' %}
+<script>
+(function () {
+  var handle = {{ product.handle | json }};
+  var sectionId = '{{ section.id }}';
+  var busy = false;
+
+  function refreshGallery(variantId) {
+    if (busy || !variantId) return;
+    busy = true;
+    fetch('/products/' + handle + '?variant=' + variantId + '&section_id=' + sectionId)
+      .then(function (r) { return r.text(); })
+      .then(function (html) {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var next = doc.getElementById('MediaGallery-' + sectionId);
+        var curr = document.getElementById('MediaGallery-' + sectionId);
+        if (next && curr) {
+          curr.outerHTML = next.outerHTML;
+        }
+      })
+      .catch(function (e) { console.warn('[gallery-filter]', e); })
+      .finally(function () { busy = false; });
+  }
+
+  // El tema actualiza la URL con ?variant=X al cambiar variante
+  var _push = history.pushState.bind(history);
+  history.pushState = function (state, title, url) {
+    _push(state, title, url);
+    if (url) {
+      try {
+        var v = new URL(url, location.href).searchParams.get('variant');
+        if (v) refreshGallery(v);
+      } catch (e) {}
+    }
+  };
+
+  window.addEventListener('popstate', function () {
+    var v = new URLSearchParams(location.search).get('variant');
+    if (v) refreshGallery(v);
+  });
+})();
+</script>
+{% endif %}

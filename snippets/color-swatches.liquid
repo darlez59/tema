@@ -112,17 +112,28 @@
 {%- elsif type == 'detail' or type == 'group' -%}
   {% comment %} Case color swatches for product detail {% endcomment %}
   {%- unless product.has_only_default_variant -%}
-    {% if has_color %}
-      {% # theme-check-disable UnclosedHTMLElement %}
-      <variant-group-detail
-        data-product-handle="{{ product.handle }}"
-        class="block"
-        data-section="{{ section.id }}"
-        data-url="{{ product.url }}"
-        {% if update_url == false %}
-          data-update-url="false"
-        {% endif %}
-      >
+    {% if product.metafields.custom.use_variants_image_group != blank %}
+      {% if product.metafields.custom.use_variants_image_group %}
+        {% # theme-check-disable UnclosedHTMLElement %}
+        <variant-group-detail
+          data-product-handle="{{ product.handle }}"
+          data-section="{{ section.id }}"
+          data-url="{{ product.url }}"
+          {% if update_url == false %}
+            data-update-url="false"
+          {% endif %}
+        >
+      {% else %}
+        <variant-radios-detail
+          class="block"
+          data-section="{{ section.id }}"
+          data-url="{{ product.url }}"
+          {% if update_url == false %}
+            data-update-url="false"
+          {% endif %}
+        >
+          {% # theme-check-disable UnclosedHTMLElement %}
+      {% endif %}
     {% else %}
       <variant-radios-detail
         class="block"
@@ -297,8 +308,12 @@
         {{ product.variants | json }}
       </script>
     {%- endif -%}
-    {% if has_color %}
-      </variant-group-detail>
+    {% if product.metafields.custom.use_variants_image_group != blank %}
+      {% if product.metafields.custom.use_variants_image_group %}
+        </variant-group-detail>
+      {% else %}
+        </variant-radios-detail>
+      {% endif %}
     {% else %}
       </variant-radios-detail>
     {% endif %}

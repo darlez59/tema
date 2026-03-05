@@ -39,7 +39,7 @@
       data-pswp-height="{{ image.preview_image.height }}"
       data-cropped="true"
       style="--aspect-ratio: {{ ratio }}"
-      data-alt="{{ image.alt | escape }}"
+      data-alt="{{ image.alt }}"
       data-media="{{ image.id }}"
     >
       {%- assign image_alt = image.alt | default: 'product' | escape -%}
@@ -50,7 +50,7 @@
       data-position="{{ image.position }}"
       style="--aspect-ratio: {{ ratio }}"
       data-pane-container
-      data-alt="{{ image.alt | escape }}"
+      data-alt="{{ image.alt }}"
       data-media="{{ image.id }}"
     >
       {%- assign image_alt = image.alt | default: 'product' | escape -%}
@@ -65,7 +65,7 @@
       class="media-gallery__image rounded-5"
       data-position="{{ image.position }}"
       data-media="{{ image.id }}"
-      data-alt="{{ image.alt | escape }}"
+      data-alt="{{ image.alt }}"
       style="--aspect-ratio: {{ ratio }}"
     >
       {%- assign image_alt = image.alt | default: 'product' | escape -%}

@@ -6509,96 +6509,20 @@ class VariantGroupDetail extends VariantRadiosDetail {
   checkColorGroup(e) {
     const colorString = this.productTarget.dataset.colorTrigger;
     if (colorString) {
-      // Trim spaces from each color trigger name to handle "Color, Colour" etc.
-      const colorArray = colorString.split(",").map(s => s.trim());
+      const colorArray = colorString.split(",");
       const colorSelector = this.productTarget.querySelector(
         `[data-value="${CSS.escape(e.target.value)}"]`
       );
       const dataName = colorSelector?.dataset.name;
-      const inputName = (dataName ? dataName : e.target.name).trim();
-      const isColorInput = colorArray.some(c => c.trim() === inputName);
+      const isColorInput = colorArray.includes(
+        dataName ? dataName : e.target.name
+      );
       if (isColorInput) {
         const dataValue = colorSelector?.dataset.colorValue;
         this.updateMediaGroup(dataValue ? dataValue : e.target.value);
       } else {
         this.updateMedia();
       }
-    }
-  }
-
-  /**
-   * Compute which media IDs should be visible for a given color value.
-   * Uses the VariantMediaGroup JSON data embedded in the page.
-   * Returns a Set of media IDs to show, or null if no data available.
-   */
-  _getVisibleMediaIds(colorValue, sectionId) {
-    const mapEl = document.getElementById(`VariantMediaGroup-${sectionId}`);
-    if (!mapEl) return null;
-    try {
-      const data = JSON.parse(mapEl.textContent);
-      if (!data || !data.entries || data.entries.length === 0) return null;
-      
-      const colorValues = (data.colorValues || []).map(v => v.toLowerCase().trim());
-      const colorLower = colorValue.toLowerCase().trim();
-      const allMedia = data.allMedia || [];
-      const entries = data.entries;
-      const totalMedia = data.totalMedia || allMedia.length;
-      
-      // Sort entries by position to build ranges
-      const sorted = [...entries].sort((a, b) => a.position - b.position);
-      
-      // Build position ranges for each color
-      const colorRanges = {};
-      for (let i = 0; i < sorted.length; i++) {
-        const startPos = sorted[i].position;
-        const endPos = (i + 1 < sorted.length) ? sorted[i + 1].position : totalMedia + 1;
-        colorRanges[sorted[i].color.toLowerCase().trim()] = { start: startPos, end: endPos };
-      }
-      const firstColorPos = sorted[0].position;
-      
-      const visibleIds = new Set();
-      
-      for (const media of allMedia) {
-        const alt = (media.alt || '').toLowerCase().trim();
-        const pos = media.position;
-        const id = media.id;
-        let show = false;
-        
-        // Rule 1: alt text matches selected color → show
-        if (alt && alt === colorLower) {
-          show = true;
-        }
-        // Rule 2: alt text matches a DIFFERENT color → ALWAYS hide
-        else if (alt && colorValues.includes(alt) && alt !== colorLower) {
-          show = false;
-        }
-        // Rule 3: No color-matching alt text → use position ranges
-        else {
-          // Generic: before the first color group
-          if (pos < firstColorPos) {
-            show = true;
-          }
-          // In the selected color's position range
-          else if (colorRanges[colorLower] && pos >= colorRanges[colorLower].start && pos < colorRanges[colorLower].end) {
-            show = true;
-          }
-          // Not in any known range and alt doesn't match any color → generic
-          else {
-            let inAnyRange = false;
-            for (const range of Object.values(colorRanges)) {
-              if (pos >= range.start && pos < range.end) { inAnyRange = true; break; }
-            }
-            if (!inAnyRange) show = true;
-          }
-        }
-        
-        if (show) visibleIds.add(id);
-      }
-      
-      return visibleIds;
-    } catch (e) {
-      console.error('Error computing visible media:', e);
-      return null;
     }
   }
 
@@ -6611,37 +6535,6 @@ class VariantGroupDetail extends VariantRadiosDetail {
     const zoomAction = this.productTarget.querySelector("zoom-action");
     const elementFeatureProduct = this.productTarget.dataset.typeElement;
     if (!productHandle || !sectionId || !desktopLayout) return;
-
-    // Pre-compute which media IDs to show for this color
-    const visibleMediaIds = this._getVisibleMediaIds(altValue, sectionId);
-    // Also get button values for fallback alt-text-based filtering
-    const allButtonValues = this.getAllButtonValue();
-    const allButtonValuesLower = allButtonValues.map(v => v.toLowerCase().trim());
-    const altValueLower = altValue.toLowerCase().trim();
-
-    /**
-     * Determine if a fetched gallery item should be shown for the selected color.
-     * Priority: 1) media ID map, 2) alt text, 3) show as generic
-     */
-    const shouldShow = (item) => {
-      const mediaId = parseInt(item.dataset.media);
-      const itemAlt = (item.dataset.alt || '').trim();
-      const itemAltLower = itemAlt.toLowerCase();
-      
-      // If we have a media ID map, use it (most reliable)
-      if (visibleMediaIds && mediaId) {
-        return visibleMediaIds.has(mediaId);
-      }
-      
-      // Fallback: alt text based filtering
-      // 1) Alt matches selected color → show
-      if (itemAlt && itemAltLower === altValueLower) return true;
-      // 2) Alt matches a different color → hide
-      if (itemAlt && allButtonValuesLower.includes(itemAltLower) && itemAltLower !== altValueLower) return false;
-      // 3) No color-matching alt → show as generic
-      return true;
-    };
-
     if (
       desktopLayout !== "grid_1_column" &&
       desktopLayout !== "grid_2_column" &&
@@ -6677,7 +6570,10 @@ class VariantGroupDetail extends VariantRadiosDetail {
               "div.media-gallery__image[data-pane-container]"
             );
             noZoomItems.forEach((item) => {
-              if (shouldShow(item)) {
+              if (
+                (item.dataset.alt && item.dataset.alt == altValue) ||
+                !this.getAllButtonValue().includes(item.dataset.alt)
+              ) {
                 const mediaDefaultId = item.dataset.media;
                 if (mediaDefaultId) {
                   item.setAttribute(
@@ -6698,7 +6594,10 @@ class VariantGroupDetail extends VariantRadiosDetail {
               "div.media-gallery__image[data-pane-container]"
             );
             driftZoomItems.forEach((item) => {
-              if (shouldShow(item)) {
+              if (
+                (item.dataset.alt && item.dataset.alt == altValue) ||
+                !this.getAllButtonValue().includes(item.dataset.alt)
+              ) {
                 const mediaDefaultId = item.dataset.media;
                 if (mediaDefaultId) {
                   item.setAttribute(
@@ -6713,7 +6612,10 @@ class VariantGroupDetail extends VariantRadiosDetail {
           } else {
             const zoomItems = html.querySelectorAll("a.media-gallery__image");
             zoomItems.forEach((item) => {
-              if (shouldShow(item)) {
+              if (
+                (item.dataset.alt && item.dataset.alt == altValue) ||
+                !this.getAllButtonValue().includes(item.dataset.alt)
+              ) {
                 const mediaDefaultId = item.dataset.media;
                 if (mediaDefaultId) {
                   item.setAttribute(
@@ -6768,7 +6670,10 @@ class VariantGroupDetail extends VariantRadiosDetail {
               "div.media-gallery__image:not([data-pane-container])"
             );
             noZoomItems.forEach((item) => {
-              if (shouldShow(item)) {
+              if (
+                (item.dataset.alt && item.dataset.alt == altValue) ||
+                !this.getAllButtonValue().includes(item.dataset.alt)
+              ) {
                 const mediaDefaultId = item.dataset.media;
                 if (mediaDefaultId) {
                   item.setAttribute(
@@ -6859,7 +6764,10 @@ class VariantGroupDetail extends VariantRadiosDetail {
               "div.media-gallery__image:not([data-pane-container])"
             );
             noZoomItems.forEach((item) => {
-              if (shouldShow(item)) {
+              if (
+                (item.dataset.alt && item.dataset.alt == altValue) ||
+                !this.getAllButtonValue().includes(item.dataset.alt)
+              ) {
                 const mediaDefaultId = item.dataset.media;
                 if (mediaDefaultId) {
                   item.setAttribute(
@@ -6881,7 +6789,10 @@ class VariantGroupDetail extends VariantRadiosDetail {
               "div.media-gallery__image[data-pane-container]"
             );
             driftZoomItems.forEach((item) => {
-              if (shouldShow(item)) {
+              if (
+                (item.dataset.alt && item.dataset.alt == altValue) ||
+                !this.getAllButtonValue().includes(item.dataset.alt)
+              ) {
                 const mediaDefaultId = item.dataset.media;
                 if (mediaDefaultId) {
                   item.setAttribute(
@@ -6895,7 +6806,10 @@ class VariantGroupDetail extends VariantRadiosDetail {
           } else {
             const zoomItems = html.querySelectorAll("a.media-gallery__image");
             zoomItems.forEach((item) => {
-              if (shouldShow(item)) {
+              if (
+                (item.dataset.alt && item.dataset.alt == altValue) ||
+                !this.getAllButtonValue().includes(item.dataset.alt)
+              ) {
                 const mediaDefaultId = item.dataset.media;
                 if (mediaDefaultId) {
                   item.setAttribute(
