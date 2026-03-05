@@ -173,12 +173,12 @@
         "timer_style": "default",
         "collections_type": "carousel",
         "collection": "maquillaje",
-        "items_to_show": 8,
+        "items_to_show": 15,
         "items_per_row": 5,
         "rows_on_desktop": 2,
         "enable_load_more": false,
         "button_label": "Load more",
-        "column_gap": 30,
+        "column_gap": 50,
         "show_arrow": true,
         "carousel_pagination": "show_dots_on_mobile",
         "infinite": true,
@@ -316,8 +316,8 @@
         "image_width": 300,
         "image_max_height": 185,
         "space_between_images": 0,
-        "padding_top": 60,
-        "padding_bottom": 60
+        "padding_top": 44,
+        "padding_bottom": 15
       }
     },
     "multi_content_GYmhdq": {
@@ -671,7 +671,7 @@
         "tab_header_postion": "default",
         "display_mode": "carousel",
         "items_to_show": 8,
-        "items_per_row": 3,
+        "items_per_row": 5,
         "column_gap": 30,
         "show_arrow": false,
         "carousel_pagination": "disable",

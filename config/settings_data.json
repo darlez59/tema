@@ -60,7 +60,7 @@
     "product_recommendations_heading": "Te podría interesar",
     "minicart_type": "show_beside",
     "show_on_cart_page": true,
-    "product_recommendations_type": "select",
+    "product_recommendations_type": "auto",
     "select_product_recommendations": [
       "2-iluminadores-sombras-en-polvo-morphe",
       "247-glide-on-lapiz-labial",
