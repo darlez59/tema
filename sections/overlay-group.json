@@ -1,1 +1,46 @@
-{"name":"t:sections.overlay_group.name","type":"custom.overlay","sections":{"mobile_navigation_bar_GG8UWc":{"type":"mobile-navigation-bar","blocks":{"homepage_xiQ8UP":{"type":"homepage","settings":{}},"account_6ynFFp":{"type":"account","settings":{}},"shop_MUxUGE":{"type":"shop","settings":{}},"cart_8xqQBb":{"type":"cart","settings":{}}},"block_order":["homepage_xiQ8UP","account_6ynFFp","shop_MUxUGE","cart_8xqQBb"],"settings":{}}},"order":["mobile_navigation_bar_GG8UWc"]}
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "name": "t:sections.overlay_group.name",
+  "type": "custom.overlay",
+  "sections": {
+    "mobile_navigation_bar_GG8UWc": {
+      "type": "mobile-navigation-bar",
+      "blocks": {
+        "homepage_xiQ8UP": {
+          "type": "homepage",
+          "settings": {}
+        },
+        "account_6ynFFp": {
+          "type": "account",
+          "settings": {}
+        },
+        "shop_MUxUGE": {
+          "type": "shop",
+          "settings": {}
+        },
+        "cart_8xqQBb": {
+          "type": "cart",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "homepage_xiQ8UP",
+        "account_6ynFFp",
+        "shop_MUxUGE",
+        "cart_8xqQBb"
+      ],
+      "settings": {}
+    }
+  },
+  "order": [
+    "mobile_navigation_bar_GG8UWc"
+  ]
+}
