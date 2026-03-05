@@ -40,7 +40,7 @@
     "price_size": 15,
     "show_vendor": false,
     "show_secondary_image": true,
-    "product_image_ratio": "portrait",
+    "product_image_ratio": "square",
     "show_action_on_mobile": true,
     "swatch_item_type": "variant_images",
     "color_swatch_trigger": "Color,Colour,Cor,Tonalidades,Soft Pinch Tinted Lip Oil,Líneas,Presentación,Presentaciones,Variantes,Variante",
