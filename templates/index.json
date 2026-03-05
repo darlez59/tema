@@ -81,7 +81,7 @@
           "type": "collection",
           "settings": {
             "collection": "maquillaje",
-            "collection_image": "shopify://shop_images/6.png",
+            "collection_image": "shopify://shop_images/3_2.png",
             "collection_title": "Maquillaje"
           }
         },
@@ -89,7 +89,7 @@
           "type": "collection",
           "settings": {
             "collection": "cuidado-de-la-piel",
-            "collection_image": "shopify://shop_images/5.png",
+            "collection_image": "shopify://shop_images/2_2.png",
             "collection_title": "Cuidado de la Piel (Skincare)"
           }
         },
@@ -97,7 +97,7 @@
           "type": "collection",
           "settings": {
             "collection": "cabello",
-            "collection_image": "shopify://shop_images/1.png",
+            "collection_image": "shopify://shop_images/1_2.png",
             "collection_title": "Cuidado del Cabello"
           }
         },
@@ -105,7 +105,7 @@
           "type": "collection",
           "settings": {
             "collection": "fragancia",
-            "collection_image": "shopify://shop_images/4.png",
+            "collection_image": "shopify://shop_images/4_c8d551be-1f76-4a21-8350-f7c5c180f1cd.png",
             "collection_title": "Fragancias"
           }
         }
