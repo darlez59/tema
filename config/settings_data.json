@@ -4,9 +4,9 @@
  *
  * This file may be updated by the Shopify admin theme editor
  * or related systems. Please exercise caution as any changes
- * made to this file may be over written.
+ * made to this file may be overwritten.
  * ------------------------------------------------------------
- */ 
+ */
 {
   "current": {
     "purchase_code": "3f9c2b18-0d7a-4a6e-9f2e-8c7b1d4e6a50",
@@ -16,7 +16,7 @@
     "desktop_logo_width": 152,
     "mobile_logo_width": 120,
     "page_width": 1200,
-    "fluid_container_width": 1410,
+    "fluid_container_width": 1400,
     "spacing_desktop": 0,
     "space_mobile": 0,
     "body_font_size": 15,
@@ -40,7 +40,7 @@
     "price_size": 15,
     "show_vendor": false,
     "show_secondary_image": true,
-    "product_image_ratio": "portrait",
+    "product_image_ratio": "square",
     "show_action_on_mobile": true,
     "swatch_item_type": "variant_images",
     "color_swatch_trigger": "Color,Colour,Cor,Tonalidades,Soft Pinch Tinted Lip Oil,Líneas,Presentación,Presentaciones,Variantes,Variante",
@@ -391,5 +391,8 @@
   },
   "presets": {
     "Default": {}
+  },
+  "platform_customizations": {
+    "custom_css": []
   }
 }
