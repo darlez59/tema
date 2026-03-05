@@ -1,0 +1,95 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "name": "t:sections.footer.name",
+  "type": "footer",
+  "sections": {
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "store_info_tUhcyD": {
+          "type": "store_info",
+          "settings": {
+            "image": "shopify://shop_images/svgexport-1.svg",
+            "image_width": 200,
+            "store_heading": "",
+            "store_description": "",
+            "store_address": true,
+            "store_phone": true,
+            "store_email": true,
+            "content_width": "25%"
+          }
+        },
+        "link_list_JTq77M": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Menu",
+            "menu": "men-copia",
+            "content_width": "16%"
+          }
+        },
+        "link_list_iVhaPk": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Categorias",
+            "menu": "categoria",
+            "content_width": "16%"
+          }
+        },
+        "link_list_ppR7ny": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Legal",
+            "menu": "politicas",
+            "content_width": "16%"
+          }
+        },
+        "claims_book_3RBUMQ": {
+          "type": "claims_book",
+          "settings": {
+            "image": "shopify://shop_images/Libro_de_Reclamaciones.png",
+            "link": "shopify://pages/libro-de-reclamaciones",
+            "image_width": 120,
+            "content_width": "25%"
+          }
+        }
+      },
+      "block_order": [
+        "store_info_tUhcyD",
+        "link_list_JTq77M",
+        "link_list_iVhaPk",
+        "link_list_ppR7ny",
+        "claims_book_3RBUMQ"
+      ],
+      "settings": {
+        "section_width": "fluid_container",
+        "color_scheme": "scheme-3d10de96-a479-49bd-819c-e044746b4f3e",
+        "enable_back_top": false,
+        "separator_line": "all-page",
+        "enable_country_selector": true,
+        "enable_language_selector": false,
+        "enable_follow_on_shop": true,
+        "menu_store_policies": "",
+        "show_social": true,
+        "payment_enable": true,
+        "payment_image": "shopify://shop_images/Metodos-de-Pago-Mercado-Pago-Yape-1-blanco.png",
+        "payment_width": 240,
+        "copyright_text": "<p>© 2026 Mak beauty. Powered by <a href=\"https://ecom-project.com/\" target=\"_blank\"><strong>Ecom Project.</strong></a></p>",
+        "footer_heading_size": 16,
+        "padding_top": 60,
+        "padding_bottom": 45,
+        "reset_spacing_on_homepage": true
+      }
+    }
+  },
+  "order": [
+    "footer"
+  ]
+}

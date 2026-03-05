@@ -1,0 +1,97 @@
+{% liquid
+  assign block_st = block.settings
+%}
+
+<div class="product-installments-banner-{{ block.id }}"
+     {{ block.shopify_attributes }}
+     style="margin-top: {{ block_st.margin_top }}px; margin-bottom: {{ block_st.margin_bottom }}px;">
+
+  <style>
+    .product-installments-banner-{{ block.id }}{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:#f9f9f9;
+      border:1px solid #FA9CCB;
+      border-radius:8px;
+      padding:10px 14px;
+      font-size:14px;
+      line-height:1.4;
+      color:#333;
+    }
+
+    .product-installments-banner-{{ block.id }} img{
+      width:22px;
+      height:22px;
+      object-fit:contain;
+    }
+
+    .product-installments-banner-{{ block.id }} strong{
+      font-weight:600;
+    }
+
+    @media(max-width:768px){
+      .product-installments-banner-{{ block.id }}{
+        font-size:13px;
+        padding:8px 12px;
+      }
+    }
+  </style>
+
+  {% if block_st.show_logo and block_st.logo != blank %}
+    <img 
+      src="{{ block_st.logo | image_url: width: 60 }}"
+      alt="Mercado Pago"
+      loading="lazy">
+  {% endif %}
+
+  <div>
+    Paga en <strong>3, 6, 9 o 12 cuotas</strong> sin intereses con Mercado Pago.
+  </div>
+
+</div>
+
+{% schema %}
+{
+  "name": "Banner Cuotas",
+  "tag": null,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_logo",
+      "label": "Mostrar logo",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo Mercado Pago"
+    },
+    {
+      "type": "range",
+      "id": "margin_top",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Margen superior",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Margen inferior",
+      "default": 10
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner Cuotas"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,471 @@
+<link rel="stylesheet" href="{{ 'banner.css' | asset_url }}" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{{ 'hero-cards.css' | asset_url }}" media="print" onload="this.media='all'">
+{% liquid
+  assign section_st = section.settings
+  assign section_width = section_st.section_width
+  if section_st.reset_spacing
+    assign reset_spacing = ' remove_spacing'
+  endif
+  assign column_gap = section_st.column_gap
+  assign cards_desktop = section_st.cards_desktop
+  assign show_arrow = section_st.show_arrow
+  assign card_ratio = section_st.card_image_ratio
+  assign autoplay = section_st.autoplay
+  assign autorotate_speed = section_st.autorotate_speed
+  assign infinite = section_st.infinite
+%}
+{% liquid
+  assign heading_size_desk = section_st.heading_font_size_desktop | default: 20
+  assign heading_size_mob = section_st.heading_font_size_mobile | default: 18
+  assign subtitle_size_desk = section_st.subtitle_font_size_desktop | default: 16
+  assign subtitle_size_mob = section_st.subtitle_font_size_mobile | default: 14
+%}
+{% liquid
+  assign strip_height = section_st.strip_height | default: 200
+%}
+{%- capture style -%}
+  --section-pt: {{ section_st.padding_top }}; --section-pb: {{ section_st.padding_bottom }};
+  --hero-heading-size-desk: {{ heading_size_desk }}px; --hero-heading-size-mob: {{ heading_size_mob }}px;
+  --hero-subtitle-size-desk: {{ subtitle_size_desk }}px; --hero-subtitle-size-mob: {{ subtitle_size_mob }}px;
+  --hero-strip-height: {{ strip_height }}px;
+  {% if column_gap > 0 %}--hero-cards-gap: {{ column_gap }}px;{% endif %}
+{%- endcapture -%}
+{%- capture col_style -%}
+{% if column_gap < 15 %}--col-gap: {{ column_gap }}px;{% else %}--col-gap: 15px;--col-gap-desktop: {{ column_gap }}px;{% endif %}
+{%- endcapture -%}
+<div
+  id="{{ section.id }}"
+  class="section{% if section_st.padding_top < 30 %} pt-min{% endif %}{% if section_st.padding_bottom < 30 %} pb-min{% endif %} sec__hero-cards color-{{ section_st.color_scheme }} gradient{{ reset_spacing }}"
+  style="{{ style | strip | strip_newlines }}"
+>
+  {%- comment -%}
+    Consistente con secciones nativas:
+    - Si es full_width, aplicamos padding lateral como muchas secciones del tema (px-20)
+    - Reutilizamos variables de gap (--col-gap / --col-gap-desktop) como carousels nativos
+  {%- endcomment -%}
+  <div class="{{ section_width }}{% if section_width == 'full_width' %} px-20{% endif %}">
+    <slide-section
+      id="hero-cards-{{ section.id }}"
+      class="swiper hero-cards-swiper"
+      data-section-id="{{ section.id }}"
+      data-autoplay="{{ autoplay }}"
+      data-autoplay-speed="{{ autorotate_speed }}"
+      data-effect="slide"
+      data-loop="{{ infinite }}"
+      data-speed="500"
+      data-spacing="{{ column_gap }}"
+      data-mobile="1"
+      data-desktop="{{ cards_desktop }}"
+      data-arrow-centerimage="0"
+      style="{{ col_style | strip | strip_newlines }}"
+    >
+      {% if show_arrow %}
+        {%- render 'swiper-navigation', class: 'show-on-mobile' -%}
+      {% endif %}
+      <div class="swiper-wrapper hero-cards__wrapper">
+        {% for block in section.blocks %}
+          {% if block.type == 'hero_card' %}
+            {% liquid
+              assign block_st = block.settings
+              assign image = block_st.image
+              assign image_mobile = block_st.image_mobile | default: image
+              assign heading = block_st.heading
+              assign subtitle = block_st.subtitle
+              assign button_link = block_st.button_link
+              assign button_text = block_st.button_text
+              assign strip_bg = block_st.strip_background
+              assign heading_color = block_st.heading_color
+              assign subtitle_color = block_st.subtitle_color
+              assign button_color = block_st.button_text_color
+              assign button_hover_color = block_st.button_hover_color
+              assign button_effect = block_st.button_effect | default: 'diagonal_shine'
+              assign button_bg = block_st.button_bg_color
+              assign button_font_size = block_st.button_font_size | default: 16
+              assign button_font_size_mob = block_st.button_font_size_mobile | default: 14
+              assign aspect_ratio = card_ratio
+              assign mobile_aspect_ratio = card_ratio
+            %}
+            <div class="swiper-slide hero-cards__slide" {{ block.shopify_attributes }}>
+              <div class="hero-card flex flex-column h-full rounded overflow-hidden">
+                <div
+                  class="hero-card__media relative w-full overflow-hidden"
+                  style="--aspect-ratio: {{ aspect_ratio }};--aspect-ratio-mb: {{ mobile_aspect_ratio }};"
+                >
+                  {% if image != blank or image_mobile != blank %}
+                    {% assign image_alt = image.alt | default: heading | escape %}
+                    {% render 'responsive-image',
+                      type: 'banner',
+                      container: section_width,
+                      image: image,
+                      image_mobile: image_mobile,
+                      image_alt: image_alt,
+                      no_animate: true
+                    %}
+                  {% else %}
+                    {%- render 'placeholder-render', class: 'absolute inset-0 w-full h-full object-cover' -%}
+                  {% endif %}
+                </div>
+                <div
+                  class="hero-card__strip flex flex-column py-20 px-25"
+                  style="background-color: {{ strip_bg }};{% if heading_color != blank %}--hero-card-heading-color: {{ heading_color }};{% endif %}{% if subtitle_color != blank %}--hero-card-subtitle-color: {{ subtitle_color }};{% endif %}{% if button_bg != blank %}--hero-cta-bg: {{ button_bg }};{% endif %}{% if button_color != blank %}--hero-cta-color: {{ button_color }};{% endif %}{% if button_hover_color != blank %}--hero-cta-hover-color: {{ button_hover_color }};{% endif %}--hero-cta-font-size-desk: {{ button_font_size }}px;--hero-cta-font-size-mob: {{ button_font_size_mob }}px;"
+                >
+                  <div class="hero-card__strip-text">
+                    {% if heading != blank %}
+                      <h3 class="hero-card__heading mt-0 mb-10">{{ heading }}</h3>
+                    {% endif %}
+                    {% if subtitle != blank %}
+                      <p class="hero-card__subtitle mt-0 mb-15">{{ subtitle }}</p>
+                    {% endif %}
+                  </div>
+                  {% if button_text != blank and button_link != blank %}
+                    <a href="{{ button_link }}" class="hero-card__cta hero-card__cta--{{ button_effect | replace: '_', '-' }} inline-flex no-underline align-center gap-5" style="{% if button_bg != blank %}background-color: {{ button_bg }};{% endif %}{% if button_color != blank %}color: {{ button_color }};{% endif %}">
+                      <span class="hero-card__cta-text">{{ button_text }}</span>
+                      <span class="hero-card__arrow" aria-hidden="true">►</span>
+                      {% if button_effect == 'animated_border' %}<span class="hero-card__cta-frame" aria-hidden="true"></span>{% endif %}
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </slide-section>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Hero cards",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "footer", "custom.overlay"]
+  },
+  "settings": [
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:sections.all.section_width.label",
+      "default": "fluid_container",
+      "options": [
+        { "value": "container", "label": "t:sections.all.section_width.container.label" },
+        { "value": "fluid_container", "label": "t:sections.all.section_width.fluid_container.label" },
+        { "value": "stretch_width", "label": "t:sections.all.section_width.stretch_width.label" },
+        { "value": "full_width", "label": "t:sections.all.section_width.full_width.label" }
+      ]
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_scheme.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "cards_desktop",
+      "label": "Tarjetas visibles en escritorio",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3,
+      "info": "En móvil siempre se muestra 1 tarjeta por vista."
+    },
+    {
+      "type": "range",
+      "id": "column_gap",
+      "label": "t:sections.all.items.column_gap.label",
+      "min": 0,
+      "max": 40,
+      "step": 4,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "card_image_ratio",
+      "label": "Proporción de imagen (mismo tamaño en todas las tarjetas)",
+      "default": "4/5",
+      "options": [
+        { "value": "1/1", "label": "1:1 Cuadrado" },
+        { "value": "4/5", "label": "4:5 Vertical" },
+        { "value": "3/4", "label": "3:4 Vertical" },
+        { "value": "16/9", "label": "16:9 Horizontal" },
+        { "value": "3/2", "label": "3:2 Horizontal" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrow",
+      "label": "t:sections.all.carousel_settings.show-next-back.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "t:sections.all.carousel_settings.auto_change.label",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "autorotate_speed",
+      "label": "t:sections.all.carousel_settings.change_slides_every.label",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "default": 5,
+      "unit": "s"
+    },
+    {
+      "type": "checkbox",
+      "id": "infinite",
+      "label": "t:sections.all.carousel_settings.infinite.label",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "strip_height",
+      "label": "Altura de la franja de texto (todas las cards igual)",
+      "min": 140,
+      "max": 280,
+      "step": 10,
+      "default": 200,
+      "unit": "px",
+      "info": "Misma altura en todas las tarjetas para un aspecto uniforme."
+    },
+    {
+      "type": "header",
+      "content": "Tamaño de fuentes"
+    },
+    {
+      "type": "range",
+      "id": "heading_font_size_desktop",
+      "label": "Título – tamaño en escritorio",
+      "min": 14,
+      "max": 32,
+      "step": 1,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "heading_font_size_mobile",
+      "label": "Título – tamaño en móvil",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "default": 18,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "subtitle_font_size_desktop",
+      "label": "Subtítulo – tamaño en escritorio",
+      "min": 12,
+      "max": 22,
+      "step": 1,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "subtitle_font_size_mobile",
+      "label": "Subtítulo – tamaño en móvil",
+      "min": 11,
+      "max": 20,
+      "step": 1,
+      "default": 14,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.section_padding.label"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:sections.all.section_padding.top.label",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:sections.all.section_padding.bottom.label",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "default": 0,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "reset_spacing",
+      "label": "t:sections.all.section_padding.reset_spacing.label",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "hero_card",
+      "name": "Tarjeta hero",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:sections.all.image.label"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_mobile",
+          "label": "t:sections.all.image.mobile_image.label"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Título",
+          "default": "Título de la tarjeta"
+        },
+        {
+          "type": "textarea",
+          "id": "subtitle",
+          "label": "Subtítulo",
+          "default": "Descripción breve."
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Enlace del botón"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Texto del botón",
+          "default": "SHOP NOW"
+        },
+        {
+          "type": "header",
+          "content": "Estilo del botón"
+        },
+        {
+          "type": "select",
+          "id": "button_effect",
+          "label": "Efecto hover del botón",
+          "default": "diagonal_shine",
+          "options": [
+            { "value": "diagonal_shine", "label": "Diagonal Shine" },
+            { "value": "text_slide_up", "label": "Text Slide Up" },
+            { "value": "ripple_burst", "label": "Ripple Burst" },
+            { "value": "soft_ripple", "label": "Soft Ripple" },
+            { "value": "shine_swipe", "label": "Shine Swipe" },
+            { "value": "glitch_shake", "label": "Glitch Shake" },
+            { "value": "animated_border", "label": "Animated Border" }
+          ]
+        },
+        {
+          "type": "color",
+          "id": "button_bg_color",
+          "label": "Fondo del botón",
+          "default": "#000000"
+        },
+        {
+          "type": "range",
+          "id": "button_font_size",
+          "label": "Botón – tamaño en escritorio",
+          "min": 12,
+          "max": 24,
+          "step": 1,
+          "default": 16,
+          "unit": "px"
+        },
+        {
+          "type": "range",
+          "id": "button_font_size_mobile",
+          "label": "Botón – tamaño en móvil",
+          "min": 11,
+          "max": 20,
+          "step": 1,
+          "default": 14,
+          "unit": "px"
+        },
+        {
+          "type": "header",
+          "content": "Colores de la tarjeta"
+        },
+        {
+          "type": "color",
+          "id": "strip_background",
+          "label": "Fondo de la franja inferior",
+          "default": "#2d2d2d"
+        },
+        {
+          "type": "color",
+          "id": "heading_color",
+          "label": "Color del título"
+        },
+        {
+          "type": "color",
+          "id": "subtitle_color",
+          "label": "Color del subtítulo"
+        },
+        {
+          "type": "color",
+          "id": "button_text_color",
+          "label": "Color del botón / enlace"
+        },
+        {
+          "type": "color",
+          "id": "button_hover_color",
+          "label": "Color del botón al pasar el ratón"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero cards",
+      "category": "t:categories.banners",
+      "blocks": [
+        {
+          "type": "hero_card",
+          "settings": {
+            "heading": "Detox Shampoos for a Hair Reset",
+            "subtitle": "Clarifying picks for a deep cleanse.",
+            "button_text": "SHOP NOW",
+            "strip_background": "#5b4d7a"
+          }
+        },
+        {
+          "type": "hero_card",
+          "settings": {
+            "heading": "Coveted Valentine's Day Gifts Under $40",
+            "subtitle": "Value sets—the gifts that get you more for less.",
+            "button_text": "SHOP NOW",
+            "strip_background": "#c41e5a"
+          }
+        },
+        {
+          "type": "hero_card",
+          "settings": {
+            "heading": "New from The Ordinary",
+            "subtitle": "A hydrating, serum-like moisturizer to support the skin barrier.",
+            "button_text": "SHOP NOW",
+            "strip_background": "#3d3d3d"
+          }
+        },
+        {
+          "type": "hero_card",
+          "settings": {
+            "heading": "Solves for Smoothing",
+            "subtitle": "Exfoliate and refine skin texture.",
+            "button_text": "SHOP NOW",
+            "strip_background": "#111111"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

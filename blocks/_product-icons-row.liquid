@@ -1,0 +1,281 @@
+{% liquid
+  assign block_st = block.settings
+  assign icon_width = block_st.icon_width
+  assign text_width_max = block_st.text_max_width
+  assign text_size = block_st.text_size
+  assign gap = block_st.icon_gap
+%}
+
+<div class="product-icons-block" {{ block.shopify_attributes }} style="margin-top: {{ block_st.padding_top }}px; margin-bottom: {{ block_st.padding_bottom }}px;">
+
+  <style>
+    .icons-row-{{ block.id }} {
+      display: flex;
+      flex-wrap: wrap;
+      gap: {{ gap }}px;
+      align-items: flex-start;
+      width: 100%;
+    }
+
+    .icon-item-{{ block.id }} {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      width: {{ text_width_max }}px;
+      max-width: 100%;
+    }
+
+    .icon-media-{{ block.id }} {
+      width: {{ icon_width }}px;
+      height: {{ icon_width }}px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .icon-media-{{ block.id }} svg,
+    .icon-media-{{ block.id }} img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .icon-text-{{ block.id }} {
+      font-size: {{ text_size }}px;
+      line-height: 1.3;
+      color: {{ block_st.text_color }};
+      word-wrap: break-word;
+    }
+
+    @media screen and (max-width: 768px) {
+      .icons-row-{{ block.id }} {
+        justify-content: center;
+      }
+    }
+
+    @media screen and (min-width: 769px) {
+      .icons-row-{{ block.id }} {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+
+  <div class="icons-row-{{ block.id }}">
+    {%- for i in (1..5) -%}
+      {%- assign svg_id = 'icon_svg_' | append: i -%}
+      {%- assign img_id = 'icon_image_' | append: i -%}
+      {%- assign txt_id = 'icon_text_' | append: i -%}
+
+      {%- assign svg_code = block_st[svg_id] -%}
+      {%- assign image = block_st[img_id] -%}
+      {%- assign text = block_st[txt_id] -%}
+
+      {%- if svg_code != blank or image != blank or text != blank -%}
+        <div class="icon-item-{{ block.id }}">
+          <div class="icon-media-{{ block.id }}">
+            {%- if svg_code != blank -%}
+              {{ svg_code }}
+            {%- elsif image != blank -%}
+              <img src="{{ image | image_url: width: 200 }}" alt="{{ text | escape }}" width="{{ icon_width }}" height="{{ icon_width }}" loading="lazy">
+            {%- endif -%}
+          </div>
+          {%- if text != blank -%}
+            <span class="icon-text-{{ block.id }}">{{ text }}</span>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Fila de Iconos (5 Max)",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Configuración de Tamaños"
+    },
+    {
+      "type": "range",
+      "id": "icon_width",
+      "min": 20,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "Tamaño del Icono (Imagen/SVG)",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "text_max_width",
+      "min": 60,
+      "max": 300,
+      "step": 5,
+      "unit": "px",
+      "label": "Ancho permitido del texto",
+      "default": 120,
+      "info": "Aumenta esto para que el texto no se corte en muchas líneas."
+    },
+    {
+      "type": "range",
+      "id": "icon_gap",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Espacio entre columnas",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Estilo del Texto"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Tamaño de fuente",
+      "default": 12
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Color del texto",
+      "default": "#333333"
+    },
+    {
+      "type": "header",
+      "content": "Márgenes del Bloque"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Relleno Superior",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Relleno Inferior",
+      "default": 10
+    },
+    {
+      "type": "header",
+      "content": "ICONO 1"
+    },
+    {
+      "type": "html",
+      "id": "icon_svg_1",
+      "label": "SVG 1 (Código Completo)",
+      "info": "Asegúrate de incluir las etiquetas <svg>...</svg>"
+    },
+    {
+      "type": "image_picker",
+      "id": "icon_image_1",
+      "label": "Imagen 1 (PNG/JPG)"
+    },
+    {
+      "type": "text",
+      "id": "icon_text_1",
+      "label": "Texto 1"
+    },
+    {
+      "type": "header",
+      "content": "ICONO 2"
+    },
+    {
+      "type": "html",
+      "id": "icon_svg_2",
+      "label": "SVG 2 (Código)"
+    },
+    {
+      "type": "image_picker",
+      "id": "icon_image_2",
+      "label": "Imagen 2"
+    },
+    {
+      "type": "text",
+      "id": "icon_text_2",
+      "label": "Texto 2"
+    },
+    {
+      "type": "header",
+      "content": "ICONO 3"
+    },
+    {
+      "type": "html",
+      "id": "icon_svg_3",
+      "label": "SVG 3 (Código)"
+    },
+    {
+      "type": "image_picker",
+      "id": "icon_image_3",
+      "label": "Imagen 3"
+    },
+    {
+      "type": "text",
+      "id": "icon_text_3",
+      "label": "Texto 3"
+    },
+    {
+      "type": "header",
+      "content": "ICONO 4"
+    },
+    {
+      "type": "html",
+      "id": "icon_svg_4",
+      "label": "SVG 4 (Código)"
+    },
+    {
+      "type": "image_picker",
+      "id": "icon_image_4",
+      "label": "Imagen 4"
+    },
+    {
+      "type": "text",
+      "id": "icon_text_4",
+      "label": "Texto 4"
+    },
+    {
+      "type": "header",
+      "content": "ICONO 5"
+    },
+    {
+      "type": "html",
+      "id": "icon_svg_5",
+      "label": "SVG 5 (Código)"
+    },
+    {
+      "type": "image_picker",
+      "id": "icon_image_5",
+      "label": "Imagen 5"
+    },
+    {
+      "type": "text",
+      "id": "icon_text_5",
+      "label": "Texto 5"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Fila de Iconos"
+    }
+  ]
+}
+{% endschema %}

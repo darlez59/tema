@@ -1,0 +1,100 @@
+{% liquid
+  assign block_st = block.settings
+  assign product  = closest.product
+  assign _id = 'bloque-caracteristicas-' | append: section.id | append: '-' | append: block.id
+%}
+
+<div id="{{ _id }}" class="bloque-caracteristicas" {{ block.shopify_attributes }}>
+  {%- if block_st.image_desktop != blank -%}
+    <img
+      src="{{ block_st.image_desktop | image_url: width: 1500 }}"
+      alt="{{ block_st.alt_text | default: product.title }}"
+      class="only-desktop{% if enable_skeleton_loading %} skeleton-loading{% endif %}"
+      loading="lazy"
+      width="1500"
+      height="auto"
+    >
+  {%- endif -%}
+
+  {%- if block_st.image_mobile != blank -%}
+    <img
+      src="{{ block_st.image_mobile | image_url: width: 800 }}"
+      alt="{{ block_st.alt_text | default: product.title }}"
+      class="only-mobile{% if enable_skeleton_loading %} skeleton-loading{% endif %}"
+      loading="lazy"
+      width="800"
+      height="auto"
+    >
+  {%- endif -%}
+</div>
+
+<style>
+  /* Namespacing por ID para evitar fugas entre instancias */
+  #{{ _id }} {
+    text-align: center;
+    margin: {{ block_st.margin_top }}px 0 {{ block_st.margin_bottom }}px 0;
+  }
+  #{{ _id }} img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-inline: auto;
+  }
+
+  /* Patrón seguro “dos <img>” (Nota técnica que vienes usando) */
+  #{{ _id }} .only-desktop { display: block; }
+  #{{ _id }} .only-mobile  { display: none; }
+
+  @media screen and (max-width: 768px) {
+    #{{ _id }} .only-desktop { display: none; }
+    #{{ _id }} .only-mobile  { display: block; }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Bloque de características",
+  "tag": null,
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image_desktop",
+      "label": "Imagen (Desktop)"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Imagen (Mobile)"
+    },
+    {
+      "type": "text",
+      "id": "alt_text",
+      "label": "Texto ALT (opcional)",
+      "default": "texto alt"
+    },
+    {
+      "type": "range",
+      "id": "margin_top",
+      "label": "Margen superior",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "label": "Margen inferior",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 20
+    }
+  ],
+  "presets": [
+    { "name": "Bloque de características" }
+  ]
+}
+{% endschema %}
