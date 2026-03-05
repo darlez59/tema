@@ -254,49 +254,42 @@
         "logo_GmJDbF": {
           "type": "logo",
           "settings": {
-            "image": "shopify://shop_images/falabella_logo.png",
+            "image": "shopify://shop_images/5_1.png",
             "link": "https://www.falabella.com.pe/falabella-pe/seller/Mak%20Beauty"
           }
         },
         "logo_6NCnQx": {
           "type": "logo",
           "settings": {
-            "image": "shopify://shop_images/ripley_logo.png",
+            "image": "shopify://shop_images/3_1.png",
             "link": "https://simple.ripley.com.pe/tienda/mak-beauty-6049151?srsltid=AfmBOoreEFq0lLMUddhIj0Vc59AE6g9oMNprzl1VO3ATUj2Ld5O2qIZ1&type=catalog"
           }
         },
         "logo_xdYyk3": {
           "type": "logo",
           "settings": {
-            "image": "shopify://shop_images/inka_farma_logo.png",
+            "image": "shopify://shop_images/1_1.png",
             "link": "https://inkafarma.pe/producto/Tinta-para-labios-Mini-Delight---rose-brown-Rare-Beauty-Maquillaje/1762208418746"
           }
         },
         "logo_K9qKCf": {
           "type": "logo",
           "settings": {
-            "image": "shopify://shop_images/Mercadolibre_logo.png",
-            "link": ""
-          }
-        },
-        "logo_G3XW4V": {
-          "type": "logo",
-          "settings": {
-            "image": "shopify://shop_images/rappi_logo.png",
+            "image": "shopify://shop_images/2_1.png",
             "link": ""
           }
         },
         "logo_KiMwXd": {
           "type": "logo",
           "settings": {
-            "image": "shopify://shop_images/ntercop_logo.png",
+            "image": "shopify://shop_images/4_1.png",
             "link": ""
           }
         },
         "logo_NFX4y7": {
           "type": "logo",
           "settings": {
-            "image": "shopify://shop_images/yape_logo.png",
+            "image": "shopify://shop_images/6_1.png",
             "link": ""
           }
         }
@@ -306,7 +299,6 @@
         "logo_6NCnQx",
         "logo_xdYyk3",
         "logo_K9qKCf",
-        "logo_G3XW4V",
         "logo_KiMwXd",
         "logo_NFX4y7"
       ],
