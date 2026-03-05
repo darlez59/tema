@@ -1,0 +1,104 @@
+{% schema %}
+{
+  "name": "Banner Adaptable Pro",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image_desktop",
+      "label": "Imagen Escritorio (Horizontal)"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Imagen Móvil (Vertical/Cuadrada)"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Enlace del banner"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner Adaptable Pro"
+    }
+  ]
+}
+{% endschema %}
+
+<style>
+  .banner-mak-section {
+    width: 100%;
+    display: block;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .banner-mak-section a {
+    display: block;
+    width: 100%;
+    line-height: 0;
+  }
+
+  .banner-mak-img {
+    width: 100% !important;
+    height: auto !important;
+    display: block;
+    /* Evita cualquier tipo de repetición y asegura que se vea toda la imagen */
+    object-fit: contain; 
+    background-repeat: no-repeat !important;
+  }
+
+  /* Control de visibilidad */
+  .hide-mobile {
+    display: block;
+  }
+  .hide-desktop {
+    display: none;
+  }
+
+  @media screen and (max-width: 749px) {
+    .hide-mobile {
+      display: none;
+    }
+    .hide-desktop {
+      display: block;
+    }
+    /* En móvil nos aseguramos que el contenedor no fuerce alturas */
+    .banner-mak-section {
+      height: auto !important;
+    }
+  }
+</style>
+
+<div class="banner-mak-section">
+  {% if section.settings.link != blank %}
+    <a href="{{ section.settings.link }}">
+  {% endif %}
+
+    {%- if section.settings.image_desktop != blank -%}
+      <img src="{{ section.settings.image_desktop | img_url: '2000x' }}" 
+           alt="{{ section.settings.image_desktop.alt | escape }}" 
+           class="banner-mak-img hide-mobile"
+           loading="lazy">
+    {%- else -%}
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'banner-mak-img hide-mobile' }}
+    {%- endif -%}
+
+    {%- if section.settings.image_mobile != blank -%}
+      <img src="{{ section.settings.image_mobile | img_url: '800x' }}" 
+           alt="{{ section.settings.image_mobile.alt | escape }}" 
+           class="banner-mak-img hide-desktop"
+           loading="lazy">
+    {%- else -%}
+      {%- if section.settings.image_desktop != blank -%}
+        <img src="{{ section.settings.image_desktop | img_url: '800x' }}" 
+             class="banner-mak-img hide-desktop">
+      {%- endif -%}
+    {%- endif -%}
+
+  {% if section.settings.link != blank %}
+    </a>
+  {% endif %}
+</div>

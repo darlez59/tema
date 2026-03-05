@@ -1,0 +1,173 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "heading": {
+      "type": "page-heading",
+      "blocks": {
+        "heading_B3DXTc": {
+          "type": "heading",
+          "settings": {
+            "page_title": "Nuestras Marcas",
+            "header_size": "small"
+          }
+        },
+        "description_tLPCVn": {
+          "type": "description",
+          "settings": {
+            "description": ""
+          }
+        }
+      },
+      "block_order": [
+        "heading_B3DXTc",
+        "description_tLPCVn"
+      ],
+      "settings": {
+        "section_width": "fluid_container",
+        "color_scheme": "default",
+        "alignment": "center",
+        "overlay_opacity": 0,
+        "height": "adapt",
+        "padding_top": 19,
+        "padding_bottom": 0
+      }
+    },
+    "main": {
+      "type": "main-list-collections",
+      "blocks": {
+        "collection_GawBmm": {
+          "type": "collection",
+          "settings": {
+            "collection": "rare-beauty",
+            "collection_title": ""
+          }
+        },
+        "collection_k6UJWD": {
+          "type": "collection",
+          "settings": {
+            "collection": "rhode",
+            "collection_title": ""
+          }
+        },
+        "collection_qag64J": {
+          "type": "collection",
+          "settings": {
+            "collection": "patrick-ta",
+            "collection_title": ""
+          }
+        },
+        "collection_Kk8pDP": {
+          "type": "collection",
+          "settings": {
+            "collection": "milk-makeup",
+            "collection_title": ""
+          }
+        },
+        "collection_ACrmpU": {
+          "type": "collection",
+          "settings": {
+            "collection": "charlotte-tilbury",
+            "collection_title": ""
+          }
+        },
+        "collection_zpFtkQ": {
+          "type": "collection",
+          "settings": {
+            "collection": "makeup-by-mario",
+            "collection_title": ""
+          }
+        },
+        "collection_Lb3mRX": {
+          "type": "collection",
+          "settings": {
+            "collection": "one-size",
+            "collection_title": ""
+          }
+        },
+        "collection_qirikr": {
+          "type": "collection",
+          "settings": {
+            "collection": "sol-de-janeiro",
+            "collection_title": ""
+          }
+        },
+        "collection_HLUY4E": {
+          "type": "collection",
+          "settings": {
+            "collection": "kiko",
+            "collection_image": "shopify://shop_images/1_fe872042-8d5e-493c-9468-203161ba8c4b.png",
+            "collection_title": ""
+          }
+        },
+        "collection_dHMiiC": {
+          "type": "collection",
+          "settings": {
+            "collection": "hailey-bieber-maquillaje",
+            "collection_image": "shopify://shop_images/2_ea496d3f-6430-474c-a4f5-3776af1363ea.png",
+            "collection_title": ""
+          }
+        },
+        "collection_pip9Fw": {
+          "type": "collection",
+          "settings": {
+            "collection": "huda-beauty",
+            "collection_image": "shopify://shop_images/3.png",
+            "collection_title": ""
+          }
+        },
+        "collection_XB6zVM": {
+          "type": "collection",
+          "settings": {
+            "collection": "the-ordinary",
+            "collection_image": "shopify://shop_images/Sin_titulo_287_x_482_px.png",
+            "collection_title": ""
+          }
+        }
+      },
+      "block_order": [
+        "collection_GawBmm",
+        "collection_k6UJWD",
+        "collection_qag64J",
+        "collection_Kk8pDP",
+        "collection_ACrmpU",
+        "collection_zpFtkQ",
+        "collection_Lb3mRX",
+        "collection_qirikr",
+        "collection_HLUY4E",
+        "collection_dHMiiC",
+        "collection_pip9Fw",
+        "collection_XB6zVM"
+      ],
+      "settings": {
+        "section_width": "container",
+        "color_scheme": "default",
+        "type": "selected",
+        "sort_collections": "products_low",
+        "image_ratio": "adapt",
+        "show_product_count": false,
+        "design": "default",
+        "text_alignment": "center",
+        "font_size": 16,
+        "items_to_show": 8,
+        "items_per_row": 4,
+        "column_gap": 30,
+        "pagination": "load_more_button",
+        "button_show_more": "Load more",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    }
+  },
+  "order": [
+    "heading",
+    "main"
+  ]
+}

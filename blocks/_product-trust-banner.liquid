@@ -1,0 +1,258 @@
+{% liquid
+  assign block_st = block.settings
+  assign img_width = block_st.image_width_percent
+  assign text_width = 100 | minus: img_width
+%}
+
+<div class="product-banner-wrapper" {{ block.shopify_attributes }} style="margin-top: {{ block_st.padding_top }}px; margin-bottom: {{ block_st.padding_bottom }}px;">
+
+  <style>
+    .banner-card-{{ block.id }} {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      overflow: hidden;
+      background-color: {{ block_st.bg_color }};
+      border-radius: {{ block_st.border_radius }}px;
+      border-width: {{ block_st.border_width }}px;
+      border-color: {{ block_st.border_color }};
+      border-style: {{ block_st.border_style }};
+      min-height: {{ block_st.height_desktop }}px;
+    }
+
+    .banner-img-col-{{ block.id }} {
+      width: {{ img_width }}%;
+      position: relative;
+      background-color: #f4f4f4;
+      flex-shrink: 0;
+    }
+
+    .banner-img-col-{{ block.id }} img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .banner-txt-col-{{ block.id }} {
+      width: {{ text_width }}%;
+      padding: 15px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: left;
+    }
+
+    .banner-txt-col-{{ block.id }} h2,
+    .banner-txt-col-{{ block.id }} h3,
+    .banner-txt-col-{{ block.id }} h4 {
+      margin: 0 0 8px 0;
+      color: {{ block_st.text_color }};
+      line-height: 1.2;
+    }
+
+    .banner-txt-col-{{ block.id }} p {
+      margin: 0;
+      color: {{ block_st.text_color }};
+      font-size: {{ block_st.text_size }}px;
+      line-height: 1.5;
+    }
+
+    .banner-txt-col-{{ block.id }} a {
+      color: {{ block_st.text_color }};
+      text-decoration: underline;
+    }
+
+    @media screen and (max-width: 768px) {
+      .banner-card-{{ block.id }} {
+        flex-direction: column;
+        min-height: auto;
+      }
+
+      .banner-img-col-{{ block.id }} {
+        width: 100%;
+        height: {{ block_st.height_mobile }}px;
+      }
+
+      .banner-txt-col-{{ block.id }} {
+        width: 100%;
+        padding: 15px;
+      }
+    }
+  </style>
+
+  <div class="banner-card-{{ block.id }}">
+    <div class="banner-img-col-{{ block.id }}">
+      {%- if block_st.image != blank -%}
+        {%- assign img = block_st.image -%}
+        <img src="{{ img | image_url: width: 600 }}" alt="{{ img.alt | default: 'Banner' }}" width="{{ img.width }}" height="{{ img.height }}" loading="lazy">
+      {%- else -%}
+        {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+      {%- endif -%}
+    </div>
+
+    <div class="banner-txt-col-{{ block.id }}">
+      {%- if block_st.content != blank -%}
+        <div class="rte">
+          {{ block_st.content }}
+        </div>
+      {%- else -%}
+        <p>Configura el texto aquí.</p>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Banner de confianza",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Diseño"
+    },
+    {
+      "type": "range",
+      "id": "image_width_percent",
+      "min": 20,
+      "max": 50,
+      "step": 5,
+      "unit": "%",
+      "label": "Ancho de Imagen (%)",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "height_desktop",
+      "min": 80,
+      "max": 300,
+      "step": 5,
+      "unit": "px",
+      "label": "Altura Mínima (PC)",
+      "default": 120
+    },
+    {
+      "type": "range",
+      "id": "height_mobile",
+      "min": 100,
+      "max": 300,
+      "step": 10,
+      "unit": "px",
+      "label": "Altura Imagen (Móvil)",
+      "default": 150
+    },
+    {
+      "type": "header",
+      "content": "Estilo de Borde"
+    },
+    {
+      "type": "select",
+      "id": "border_style",
+      "label": "Tipo de Borde",
+      "options": [
+        { "value": "solid", "label": "Línea Sólida" },
+        { "value": "dashed", "label": "Guiones (- - -)" },
+        { "value": "dotted", "label": "Puntos (. . .)" },
+        { "value": "none", "label": "Ninguno" }
+      ],
+      "default": "solid"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "unit": "px",
+      "label": "Grosor Borde",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Redondeo Esquinas",
+      "default": 8
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Color del Borde",
+      "default": "#dddddd"
+    },
+    {
+      "type": "header",
+      "content": "Contenido"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Fondo",
+      "default": "#ffffff"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Imagen Izquierda"
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": "Texto Derecha",
+      "default": "<p><strong>Título del Banner</strong><br>Descripción corta aquí.</p>"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Color Texto",
+      "default": "#333333"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Tamaño Fuente",
+      "default": 14
+    },
+    {
+      "type": "header",
+      "content": "Márgenes"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Margen Superior",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Margen Inferior",
+      "default": 10
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner de confianza"
+    }
+  ]
+}
+{% endschema %}
