@@ -29,28 +29,52 @@
     color: var(--mk-text);
   }
 
-  /* — Banner superior — */
+  /* — Hero (banner + contenido superpuesto) — */
+  .mk-hero {
+    position: relative;
+    border-radius: var(--mk-radius);
+    overflow: hidden;
+    margin-bottom: 28px;
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
   .mk-banner {
-    width: 100%; border-radius: var(--mk-radius); overflow: hidden;
-    margin-bottom: 28px; background: var(--mk-pink-light);
-    aspect-ratio: 1100 / 320;
-    max-height: 320px;
+    position: absolute;
+    inset: 0;
+    background: var(--mk-pink-light);
+    overflow: hidden;
+  }
+  .mk-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.68) 0%, rgba(0,0,0,0.22) 55%, transparent 85%);
   }
   .mk-banner img {
-    width: 100%; height: 100%; object-fit: cover; object-position: center;
+    width: 100%; height: 100%; object-fit: cover; object-position: center top;
     display: block;
   }
-  @media (max-width: 768px) {
-    .mk-banner { aspect-ratio: 768 / 220; max-height: 220px; }
-  }
-  @media (max-width: 480px) {
-    .mk-banner { aspect-ratio: 480 / 180; max-height: 180px; border-radius: 12px; }
+  .mk-hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 0 28px 36px;
   }
 
   /* — Header — */
-  .mk-header { text-align: center; margin-bottom: 32px; }
-  .mk-header h2 { font-size: 28px; font-weight: 700; margin: 0 0 6px; }
-  .mk-header p { font-size: 14px; color: var(--mk-text-muted); margin: 0; }
+  .mk-header { text-align: center; margin-bottom: 24px; }
+  .mk-header h2 { font-size: 28px; font-weight: 700; margin: 0 0 6px; color: var(--mk-white); text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+  .mk-header p { font-size: 14px; color: rgba(255,255,255,0.88); margin: 0; }
+
+  @media (max-width: 768px) {
+    .mk-hero { min-height: 380px; }
+    .mk-hero-content { padding: 0 20px 28px; }
+  }
+  @media (max-width: 480px) {
+    .mk-hero { min-height: 310px; border-radius: 12px; }
+    .mk-hero-content { padding: 0 14px 20px; }
+  }
 
   /* — Búsqueda — */
   .mk-search {
@@ -364,34 +388,38 @@
 
 <div class="mk-importer">
 
-  {%- if section.settings.banner_image -%}
-  <div class="mk-banner">
-    <img src="{{ section.settings.banner_image | image_url: width: 1400 }}"
-         srcset="{{ section.settings.banner_image | image_url: width: 480 }} 480w,
-                 {{ section.settings.banner_image | image_url: width: 768 }} 768w,
-                 {{ section.settings.banner_image | image_url: width: 1100 }} 1100w,
-                 {{ section.settings.banner_image | image_url: width: 1400 }} 1400w"
-         sizes="(max-width: 480px) 480px, (max-width: 768px) 768px, 1100px"
-         alt="{{ section.settings.banner_alt | default: 'Mak Beauty Banner' }}"
-         loading="eager">
-  </div>
-  {%- endif -%}
-
-  <div class="mk-header">
-    <h2>Importar desde Sephora &amp; Amazon USA</h2>
-    <p>Pega el enlace de Sephora o Amazon (o un ASIN) y te lo traemos hasta tu puerta</p>
-  </div>
-
-  <div class="mk-search">
-    <div class="mk-search-label">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-      Link de Sephora, Amazon o ASIN (ej: B08BHXG144)
+  <div class="mk-hero">
+    {%- if section.settings.banner_image -%}
+    <div class="mk-banner">
+      <img src="{{ section.settings.banner_image | image_url: width: 1400 }}"
+           srcset="{{ section.settings.banner_image | image_url: width: 480 }} 480w,
+                   {{ section.settings.banner_image | image_url: width: 768 }} 768w,
+                   {{ section.settings.banner_image | image_url: width: 1100 }} 1100w,
+                   {{ section.settings.banner_image | image_url: width: 1400 }} 1400w"
+           sizes="(max-width: 480px) 480px, (max-width: 768px) 768px, 1100px"
+           alt="{{ section.settings.banner_alt | default: 'Mak Beauty Banner' }}"
+           loading="eager">
     </div>
-    <div class="mk-search-row">
-      <input type="text" class="mk-search-input" id="mk-url" placeholder="https://sephora.com/product/... · https://amazon.com/dp/... · B08BHXG144">
-      <button class="mk-btn-buscar" id="mk-btn" onclick="mkBuscar()">Buscar Producto</button>
+    {%- endif -%}
+
+    <div class="mk-hero-content">
+      <div class="mk-header">
+        <h2>Importar desde Sephora &amp; Amazon USA</h2>
+        <p>Pega el enlace de Sephora o Amazon (o un ASIN) y te lo traemos hasta tu puerta</p>
+      </div>
+
+      <div class="mk-search">
+        <div class="mk-search-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          Link de Sephora, Amazon o ASIN (ej: B08BHXG144)
+        </div>
+        <div class="mk-search-row">
+          <input type="text" class="mk-search-input" id="mk-url" placeholder="https://sephora.com/product/... · https://amazon.com/dp/... · B08BHXG144">
+          <button class="mk-btn-buscar" id="mk-btn" onclick="mkBuscar()">Buscar Producto</button>
+        </div>
+        <div class="mk-alert" id="mk-alert"></div>
+      </div>
     </div>
-    <div class="mk-alert" id="mk-alert"></div>
   </div>
 
   <div class="mk-loading" id="mk-loading">
