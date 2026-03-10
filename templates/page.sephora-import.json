@@ -7,12 +7,17 @@
  * made to this file may be overwritten.
  * ------------------------------------------------------------
  */
-  {
-    "sections": {
-      "main": {
-        "type": "sephora-import",
-        "settings": {}
+{
+  "sections": {
+    "main": {
+      "type": "sephora-import",
+      "settings": {
+        "banner_image": "shopify://shop_images/BAMNER-1900_jpg_4d3a9d74-07f6-4bbe-9a66-f982eadb3c32.jpg",
+        "banner_alt": "Mak Beauty — Importamos desde USA"
       }
-    },
-    "order": ["main"]
-  }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}
